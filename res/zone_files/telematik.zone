@@ -1,0 +1,2 @@
+switch.telematik	300 IN  NS  127.0.0.13
+router.telematik	300 IN  NS  127.0.0.14
