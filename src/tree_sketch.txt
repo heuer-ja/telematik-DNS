@@ -1,0 +1,33 @@
+Just a file to vizualize the DNS tree we want to build in our project:
+
+List of abbreviations:
+    [R]     - root
+    [T]     - top level domain
+    [A]     - auth. nameserver
+    [NS]    - nameserver
+
+Tree:
+
+[r] root 
+    [T] telematik
+        [A] switch.telematik
+            [NS] www.switch.telematik
+            [NS] mail.switch.telematik
+
+        [A] router.telematik
+            [NS] news.router.telematik
+            [NS] shop.router.telematik
+
+    [T] fuberlin
+        [A] homework.fuberlin
+            [NS] easy.homework.fuberlin
+            [NS] hard.homework.fuberlin
+
+        [A] pcpools.fuberlin
+            [NS] linux.pcpools.fuberlin
+            [NS] macos.pcpools.fuberlin
+            [NS] windows.pcpools.fuberlin
+
+
+
+Source: project01.pdf (whiteboard/assignments/project01)
