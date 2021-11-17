@@ -1,7 +1,8 @@
 
 import socket
 
-from constants import Constants 
+from constants import Constants
+from dns_format import DnsFormat 
 
 CONST = Constants()
 
@@ -23,10 +24,24 @@ class RecursiveResolver:
         while True:
             msg, client = self.rec_resolver.recvfrom(1024)
             msg = msg.decode("utf-8")
+            print(f"RECURSIVE RESOLVER received: '{msg}' from {client}")
 
             # TODO ask root
 
-            print(f"RECURSIVE RESOLVER received: '{msg}' from {client}")
+            # send request
+            dns_format = DnsFormat()
+
+
+            # receive: request + response
+
+    def recursion(self, dns_format:DnsFormat):
+
+        # search ip adress for nameserver
+
+        # recursion anchor
+
+        # recursion step
+        pass 
 
 
 # start recursive resolver (middleman)
