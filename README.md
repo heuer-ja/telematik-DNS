@@ -17,11 +17,11 @@
 
 # Task
 The goal is to implement basic functionalities of 
-    - a stub resolver
-    - a recursive resolver
-    - an authoritative DNS server, 
+- a stub resolver
+- a recursive resolver
+- an authoritative DNS server, 
     
-    - and to operate namespaces.
+- and to operate namespaces.
 
 ### Hints
     - top level domains can be hardcoded
