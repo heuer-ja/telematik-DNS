@@ -1,6 +1,9 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+*.pyc
 *.py[cod]
+
+# vs code stuff
 .vscode/*
 
 # Distribution / packaging
