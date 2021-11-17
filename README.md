@@ -37,7 +37,7 @@ Your stub resolver is able to (directly) request an A record from the authorativ
     - random data tranfer (udp) between client and author. NS
 
 
-### (b) Authoritative Server
+### (b) Recusive Resolver
 Your recursive resolver is able to discover the authoritative server of a name, and resolve the A record for this name.
 
 ### (c) Cache
