@@ -53,6 +53,10 @@ Your DNS implementation is used by an application (see HTTP proxy below).
 
 ----------------------------------------------------------------------
 
-# Exectuion Milestone 1
-1. `python3 main.py` (run all nameservers)
-2. `python3 stub_resolver.py` (run stub resolver and request record of specific nameserver)
+
+# Execution
+
+## Skript
+1. `python3 dns_server.py` - run all nameservers
+2. `python3 recursive_resolver.py` - run recursive resolver
+2. `python3 stub_resolver.py` - run stub resolver
