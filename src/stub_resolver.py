@@ -2,6 +2,7 @@
 import socket
 import json
 from constants import Constants
+from dns_format import DnsFormat
 
 CONST = Constants()
 
@@ -33,8 +34,11 @@ class StubResolver:
 
 
     def checkpoint_b(self) -> None:
-        msg = str.encode("hello to rec. res.")
-        rec_res_info = (CONST.REC_RESOLVER_IP, CONST.PORT)
+        name:str = "news.router.telematik"
+        record:str = "A"
+
+        msg = str.encode(f"{name} {record}")
+        rec_res_info = (CONST.IP_REC_RESOLVER, CONST.PORT)
         self.client.sendto(msg,rec_res_info)
 
 
