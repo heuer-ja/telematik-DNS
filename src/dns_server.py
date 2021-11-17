@@ -1,6 +1,6 @@
 import socket
 import pandas as pd
-
+import json 
 from threading import Thread
 from typing import Dict, List
 from constants import Constants
@@ -66,3 +66,13 @@ class DnsServer:
         list_of_records = df.loc[df['name']==name]["record"]
         record = list_of_records.iloc[0]
         return record
+
+
+
+# load nameservers
+with open('../res/config.json') as f:
+    servers = json.load(f)
+
+# start nameservers (servers)
+starter = DnsServerStarter(dns_servers=servers["DnsConfig"])
+starter.start_all_dns_servers()
