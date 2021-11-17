@@ -3,8 +3,11 @@ from typing import Dict
 import time
 import socket
 from typing import List
+import codecs
 
 from res.constants import Constants
+import pandas as pd
+
 
 CONST = Constants()
 
@@ -14,7 +17,7 @@ class DnsServerStarter:
             name=name,
             ip=ip,
             port=CONST.PORT,
-            zone_file=  f"../res/zone_files/{name}.zone"
+            zone_file=  f"res/zone_files/{name}.zone"
             ) 
         for ip, name in dns_servers.items()]
 
@@ -41,7 +44,7 @@ class DnsServer:
             print(f"server '{self.name}' received: {msg}")
 
 
-    def get_record():
+    def get_record(self, name:str):
         ''' TODO
          idea:
            1) load zone_file (if existing!) as .... pandas.df (seperator tab)?
@@ -49,4 +52,13 @@ class DnsServer:
                 True: return fitting row (record)
                 False: return author server
          '''      
-        pass 
+
+        df = pd.read_csv(
+            self.zone_file, 
+            sep='\t', 
+            header=None, # no column names in .zone-files
+            names=["name", "record"]
+        )
+                
+        record = df[df['name']==name]["record"]
+        print(record)
