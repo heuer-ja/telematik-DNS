@@ -2,7 +2,6 @@
 import socket
 import json
 from constants import Constants
-from dns_format import DnsFormat
 
 CONST = Constants()
 
@@ -45,6 +44,8 @@ class StubResolver:
         self.client.sendto(msg, rec_res_info)
 
 
+
+
 # start stub resolver (client)
 stub_resolver = StubResolver()
-stub_resolver.checkpoint_b()
+stub_resolver.checkpoint_a()
