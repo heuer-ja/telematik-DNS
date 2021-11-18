@@ -3,7 +3,7 @@ import pandas as pd
 import json
 from threading import Thread
 from typing import Dict, List
-from constants import Constants
+from constants import Constants, ServerTypes
 
 
 CONST = Constants()
@@ -68,9 +68,8 @@ class DnsServer:
 
 
 # load nameservers
-with open("../res/config.json") as f:
-    servers = json.load(f)
+servers = CONST.MAP_IP_SERVERS[ServerTypes.DNS.name]
 
 # start nameservers (servers)
-starter = DnsServerStarter(dns_servers=servers["DnsConfig"])
+starter = DnsServerStarter(dns_servers=servers)
 starter.start_all_dns_servers()

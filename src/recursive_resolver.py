@@ -37,7 +37,7 @@ class RecursiveResolver:
     def recursion(self, dns_format:DnsFormat):
 
         # search ip adress for nameserver
-
+        ip = dns_format.request.name
         # recursion anchor
 
         # recursion step
