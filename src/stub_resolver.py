@@ -25,10 +25,7 @@ class StubResolver:
         print(response.decode("utf-8"))
 
     def checkpoint_b(self) -> None:
-        name: str = "news.router.telematik"
-        record: str = "A"
-
-        msg = str.encode(f"{name} {record}")
+        msg = str.encode(input())
         rec_res_info = (CONST.IP_REC_RESOLVER, CONST.PORT)
         self.client.sendto(msg, rec_res_info)
 

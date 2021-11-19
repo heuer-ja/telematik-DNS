@@ -15,8 +15,9 @@ class RCodes(Enum):
     NOTAUTH = 8  # Server not authoritative for the zone
     NOTZONE = 9  # Name not in zone
 
+
 class QryType(Enum):
-    NS = 1 # ns record
+    NS = 1  # ns record
     A = 2  # a record
 
 
@@ -39,7 +40,7 @@ class DnsResponseFormat:
         dns_flags_rcode: int = RCodes.NXDOMAIN.value,
         dns_count_answers: int = 0,
         dns_flags_authoritative: bool = False,
-        dns_a: str = "127.0.0.11", # root
+        dns_a: str = "127.0.0.11",  # root
         dns_ns: str = "root",
         dns_resp_ttl: int = 0,
     ) -> None:
@@ -104,5 +105,4 @@ class DnsFormat:
         return json
 
     def toJsonStr(self) -> str:
-        return json.dumps(self.toJson())
-
+        return json.dumps(self.toJson(), indent=4, sort_keys=True)

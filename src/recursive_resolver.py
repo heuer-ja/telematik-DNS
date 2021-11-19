@@ -20,20 +20,31 @@ class RecursiveResolver:
     def listen(self) -> None:
         print(f"RECURSIVE RESOLVER listining ...")
 
-        # while True:
-        # msg, client = self.rec_resolver.recvfrom(CONST.BUFFER)
-        # msg = msg.decode("utf-8")
-        # print(f"RECURSIVE RESOLVER received: '{msg}' from {client}")
+        while True:
+            msg, client = self.rec_resolver.recvfrom(CONST.BUFFER)
+            msg = msg.decode("utf-8")
+            print(f"RECURSIVE RESOLVER received: '{msg}' from {client}")
 
-        # TODO
-        req: DnsFormat = DnsFormat(
-            request=DnsRequestFormat(
-                name="www.switch.telematik",
-                dns_qry_type=QryType.A.value,
+            msg = msg.split(" ")
+            ns_of_interest: str = msg[0]
+            record: int = (
+                QryType.A.value
+                if msg[1] == "A"
+                else QryType.NS.value
+                if msg[1] == "NS"
+                else None
             )
-        )
-        dns_response: DnsFormat = self.recursion_TODO(dns_request=req)
-        print(f"dns_response is {dns_response.toJsonStr()}")
+
+            req: DnsFormat = DnsFormat(
+                request=DnsRequestFormat(
+                    name=ns_of_interest,
+                    dns_qry_type=record,
+                )
+            )
+
+            print(f"searching for {ns_of_interest} {record}-record")
+            dns_response: DnsFormat = self.recursion_TODO(dns_request=req)
+            print(f"dns_response is {dns_response.toJsonStr()}")
 
     def recursion_TODO(self, dns_request: DnsFormat) -> DnsFormat:
 

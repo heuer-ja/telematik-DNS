@@ -60,3 +60,4 @@ Your DNS implementation is used by an application (see HTTP proxy below).
 1. `python3 dns_server.py` - run all nameservers
 2. `python3 recursive_resolver.py` - run recursive resolver
 2. `python3 stub_resolver.py` - run stub resolver
+    - input sth. like "linux.pcpools.fuberlin"
