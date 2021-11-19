@@ -4,6 +4,7 @@ import json
 from threading import Thread
 from typing import Dict, List
 from constants import Constants, ServerTypes
+from dns_format import DnsFormat, DnsRequestFormat, DnsResponseFormat
 
 
 CONST = Constants()
@@ -23,7 +24,7 @@ class DnsServerStarter:
 
     def start_all_dns_servers(self):
         for server in self.dns_servers:
-            thread = Thread(target=server.checkpoint_a, args=())
+            thread = Thread(target=server.checkpoint_b, args=())
             thread.start()
 
 
@@ -39,21 +40,16 @@ class DnsServer:
         self.nameserver.bind((self.ip, self.port))
         print(f"server '{self.name}'' runs ...")
 
-    def checkpoint_a(self):
-        while True:
-            # receive msg
-            msg, client = self.nameserver.recvfrom(1024)
-            msg = msg.decode("utf-8")
+    def load_zone_file(self) -> pd.DataFrame:
+        df: pd.DataFrame = pd.read_csv(
+            self.zone_file,
+            sep="\t",
+            header=None,  # no column names in .zone-files
+            names=["name", "record"],
+        )
+        return df
 
-            print(f"server '{self.name}' received query: '{msg}' from {client}")
-
-            # search for record
-            record = self.get_record(name=msg)
-
-            # response to client
-            response = f"{msg} has record: {record}"
-            self.nameserver.sendto(str.encode(response), client)
-
+    ####################[checkpoint a]#############################
     def get_record(self, name: str) -> str:
         df = pd.read_csv(
             self.zone_file,
@@ -65,6 +61,65 @@ class DnsServer:
         list_of_records = df.loc[df["name"] == name]["record"]
         record = list_of_records.iloc[0]
         return record
+
+    def checkpoint_a(self):
+        while True:
+            # receive msg
+            msg, client = self.nameserver.recvfrom(CONST.BUFFER)
+            msg = msg.decode("utf-8")
+
+            print(f"server '{self.name}' received query: '{msg}' from {client}")
+
+            # search for record
+            record = self.get_record(name=msg)
+
+            # response to client
+            response = f"{msg} has record: {record}"
+            self.nameserver.sendto(str.encode(response), client)
+
+    ####################[checkpoint b]#############################
+
+    def resolve_qry(self, dns_query: DnsRequestFormat) -> DnsResponseFormat:
+        df_zonefile: pd.DataFrame = self.load_zone_file()
+
+        # start suffix search
+        for i, row in df_zonefile.iterrows():
+            if dns_query.name.endswith(row["name"]):
+                break
+
+        print(row["record"])
+
+        # TODO check for empty row
+
+        # transform row into response
+        record: List[str] = str(row["record"]).split("  ")
+        response: DnsResponseFormat = DnsResponseFormat(
+            dns_ns=row["name"],
+            dns_a=record[2],
+        )
+        return response
+
+    def checkpoint_b(self):
+
+        while True:
+            # receive msg
+            msg, addr_rec_resolver = self.nameserver.recvfrom(CONST.BUFFER)
+            msg = msg.decode("utf-8")
+            print(
+                f"server '{self.name}' received query: '{msg}' from {addr_rec_resolver}"
+            )
+
+            # resolve request
+            dns_req: DnsFormat = DnsFormat().fromJson(json.loads(msg))
+            res: DnsResponseFormat = self.resolve_qry(dns_query=dns_req.request)
+
+            # response
+            dns_res: DnsFormat = DnsFormat(
+                request=dns_req.request,
+                response=res,
+            )
+            msg_res: str = str.encode(dns_res.toJsonStr())
+            self.nameserver.sendto(msg_res, addr_rec_resolver)
 
 
 # load nameservers

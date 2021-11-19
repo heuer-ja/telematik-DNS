@@ -21,7 +21,7 @@ class StubResolver:
 
         # send query to server
         self.client.sendto(str.encode(input_server_of_interest), (ip, CONST.PORT))
-        response, _ = self.client.recvfrom(1024)
+        response, _ = self.client.recvfrom(CONST.BUFFER)
         print(response.decode("utf-8"))
 
     def checkpoint_b(self) -> None:

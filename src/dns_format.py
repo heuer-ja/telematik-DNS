@@ -15,13 +15,17 @@ class RCodes(Enum):
     NOTAUTH = 8  # Server not authoritative for the zone
     NOTZONE = 9  # Name not in zone
 
+class QryType(Enum):
+    NS = 1 # ns record
+    A = 2  # a record
+
 
 class DnsRequestFormat:
     def __init__(
         self,
         dns_flags_recdesired: bool = False,
         name: str = "root",
-        dns_qry_type: int = 2,
+        dns_qry_type: int = QryType.A.value,
     ) -> None:
         self.dns_flags_recdesired: bool = dns_flags_recdesired
         self.name: str = name

@@ -13,6 +13,7 @@ class Constants:
         self.PORT = 53053
         self.IP_REC_RESOLVER = "127.0.0.1"
         self.IP_ROOT = "127.0.0.11"
+        self.BUFFER = 1024*2
 
         self.MAP_IP_SERVERS: Dict = {
             "DNS": {
