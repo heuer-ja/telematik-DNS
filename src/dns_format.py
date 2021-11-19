@@ -38,9 +38,9 @@ class DnsResponseFormat:
         dns_flags_response: bool = False,
         dns_flags_rcode: int = RCodes.NXDOMAIN.value,
         dns_count_answers: int = 0,
-        dns_flags_authoritative: bool = True,
-        dns_a: str = "",
-        dns_ns: str = None,
+        dns_flags_authoritative: bool = False,
+        dns_a: str = "127.0.0.11", # root
+        dns_ns: str = "root",
         dns_resp_ttl: int = 0,
     ) -> None:
         self.dns_flags_response: bool = dns_flags_response

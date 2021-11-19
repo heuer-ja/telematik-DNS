@@ -81,10 +81,11 @@ class DnsServer:
 
     def resolve_qry(self, dns_query: DnsRequestFormat) -> DnsResponseFormat:
         df_zonefile: pd.DataFrame = self.load_zone_file()
+        name_of_interest:str= dns_query.name
 
         # start suffix search
         for i, row in df_zonefile.iterrows():
-            if dns_query.name.endswith(row["name"]):
+            if name_of_interest.endswith(row["name"]):
                 break
 
         print(row["record"])
@@ -96,6 +97,7 @@ class DnsServer:
         response: DnsResponseFormat = DnsResponseFormat(
             dns_ns=row["name"],
             dns_a=record[2],
+            dns_flags_authoritative= name_of_interest==row["name"]
         )
         return response
 
@@ -106,7 +108,7 @@ class DnsServer:
             msg, addr_rec_resolver = self.nameserver.recvfrom(CONST.BUFFER)
             msg = msg.decode("utf-8")
             print(
-                f"server '{self.name}' received query: '{msg}' from {addr_rec_resolver}"
+                f"\nserver '{self.name}' received query: '{msg}' from {addr_rec_resolver}"
             )
 
             # resolve request
