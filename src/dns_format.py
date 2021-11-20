@@ -54,6 +54,11 @@ class DnsResponseFormat:
 
 
 class DnsFormat:
+    """
+    class for the dns format
+        - message format of udp-communication between (a) stub (b) rec. res. (c) ns
+        - contains request & response
+    """
     def __init__(
         self,
         request: DnsRequestFormat = DnsRequestFormat(),

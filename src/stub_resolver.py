@@ -8,6 +8,12 @@ CONST = Constants()
 
 
 class StubResolver:
+    '''
+    class that simulates stub resolver
+        - gets request (input) from client 
+        - sends request to recursive resolver & gets response
+        - shows response to client
+    '''
     def __init__(self) -> None:
         # setup client
         self.client = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)

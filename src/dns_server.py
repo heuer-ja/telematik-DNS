@@ -11,6 +11,10 @@ CONST = Constants()
 
 
 class DnsServerStarter:
+    """
+    manages all nameservers
+    """
+
     def __init__(self, dns_servers: Dict[str, str]):
         self.dns_servers: List[DnsServer] = [
             DnsServer(
@@ -23,16 +27,32 @@ class DnsServerStarter:
         ]
 
     def start_all_dns_servers(self):
+        """starts all nameservers at one"""
         for server in self.dns_servers:
             thread = Thread(target=server.checkpoint_b, args=())
             thread.start()
 
 
 class DnsServer:
+    """
+    class that simulates one nameserver (ns)
+        - receives request from recusive resolver
+        - searches child-nameserver in its zone file
+        - updates dns-response-flags
+        - sends response back to recursive resolver
+    """
+
     def __init__(self, name: str, ip: str, port: int, zone_file: str) -> None:
+        """name of ns"""
         self.name = name
+        """ip of ns"""
+
         self.ip = ip
+
+        """port of ns"""
         self.port = port
+
+        """zone file of ns"""
         self.zone_file = zone_file
 
         # setup server
@@ -80,8 +100,9 @@ class DnsServer:
     ####################[checkpoint b]#############################
 
     def resolve_qry(self, dns_query: DnsRequestFormat) -> DnsResponseFormat:
+        """searches in zone file for requested ns and its record"""
         df_zonefile: pd.DataFrame = self.load_zone_file()
-        name_of_interest:str= dns_query.name
+        name_of_interest: str = dns_query.name
 
         # start suffix search
         for i, row in df_zonefile.iterrows():
@@ -97,7 +118,7 @@ class DnsServer:
         response: DnsResponseFormat = DnsResponseFormat(
             dns_ns=row["name"],
             dns_a=record[2],
-            dns_flags_authoritative= name_of_interest==row["name"]
+            dns_flags_authoritative=name_of_interest == row["name"],
         )
         return response
 
