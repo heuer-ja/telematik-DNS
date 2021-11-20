@@ -21,10 +21,13 @@ class RecursiveResolver:
         print(f"RECURSIVE RESOLVER listining ...")
 
         while True:
-            msg, client = self.rec_resolver.recvfrom(CONST.BUFFER)
+            # receive request
+            msg, addr_client = self.rec_resolver.recvfrom(CONST.BUFFER)
             msg = msg.decode("utf-8")
-            print(f"RECURSIVE RESOLVER received: '{msg}' from {client}")
+            print(f"RECURSIVE RESOLVER received: '{msg}' from {addr_client}")
 
+
+            # tramsform request into format
             msg = msg.split(" ")
             ns_of_interest: str = msg[0]
             record: int = (
@@ -34,38 +37,39 @@ class RecursiveResolver:
                 if msg[1] == "NS"
                 else None
             )
-
             req: DnsFormat = DnsFormat(
-                request=DnsRequestFormat(
-                    name=ns_of_interest,
-                    dns_qry_type=record,
-                )
+                request=DnsRequestFormat(name=ns_of_interest, dns_qry_type=record)
             )
 
-            print(f"searching for {ns_of_interest} {record}-record")
-            dns_response: DnsFormat = self.recursion_TODO(dns_request=req)
-            print(f"dns_response is {dns_response.toJsonStr()}")
+            # recursion - search for nameserver
+            print(f"recursively searching for {ns_of_interest} {record}-record")
+            dns_response: DnsFormat = self.recursion(dns_request=req)
 
-    def recursion_TODO(self, dns_request: DnsFormat) -> DnsFormat:
+            # send response
+            print(f"dns_response is {dns_response.toJsonStr()}")
+            msg_resolved: str = dns_response.toJsonStr()
+            self.rec_resolver.sendto(str.encode(msg_resolved), addr_client)
+
+    def recursion(self, dns_request: DnsFormat) -> DnsFormat:
 
         # [recursion anchor]
         if dns_request.response.dns_flags_authoritative:
             return dns_request
 
         # [calculation]
-        # send
+        # send to nameserver
         msg_req: str = str.encode(dns_request.toJsonStr())
         addr_nameserver = (dns_request.response.dns_a, CONST.PORT)
         self.rec_resolver.sendto(msg_req, addr_nameserver)
 
-        # receive
+        # receive from nameserver
         msg, _ = self.rec_resolver.recvfrom(CONST.BUFFER)
         msg = msg.decode("utf-8")
         dns_response: DnsFormat = DnsFormat.fromJson(json.loads(msg))
         print(f"REC. RES. received: \n {dns_response.toJsonStr()}\n")
 
         # [recusion step]
-        return self.recursion_TODO(dns_request=dns_response)
+        return self.recursion(dns_request=dns_response)
 
 
 # start recursive resolver (middleman)
