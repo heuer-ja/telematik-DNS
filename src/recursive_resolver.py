@@ -2,18 +2,19 @@ import socket
 import json
 
 from constants import Constants
-from dns_format import DnsFormat, DnsRequestFormat, DnsResponseFormat, QryType
+from dns_format import DnsFormat, DnsRequestFormat, DnsResponseFormat, QryType, RCodes
 
 CONST = Constants()
 
 
 class RecursiveResolver:
-    '''
+    """
     class that simulates the recursive resolver
         - receives request from stub resolver
         - starts recursive name resolution by running through dns-tree
-        - sends name resoluation back to stub resolver 
-    '''
+        - sends name resoluation back to stub resolver
+    """
+
     def __init__(self) -> None:
         self.ip = CONST.IP_REC_RESOLVER
         self.port = CONST.PORT
@@ -24,7 +25,7 @@ class RecursiveResolver:
         print(f"RECURSIVE RESOLVER running ...")
 
     def listen(self) -> None:
-        '''listens for stub resolver request and sends response back'''
+        """listens for stub resolver request and sends response back"""
 
         print(f"RECURSIVE RESOLVER listining ...")
 
@@ -33,7 +34,6 @@ class RecursiveResolver:
             msg, addr_client = self.rec_resolver.recvfrom(CONST.BUFFER)
             msg = msg.decode("utf-8")
             print(f"RECURSIVE RESOLVER received: '{msg}' from {addr_client}")
-
 
             # tramsform request into format
             msg = msg.split(" ")
@@ -59,9 +59,17 @@ class RecursiveResolver:
             self.rec_resolver.sendto(str.encode(msg_resolved), addr_client)
 
     def recursion(self, dns_request: DnsFormat) -> DnsFormat:
-        '''starts recursive name resolution by running through dns-tree'''
+        """starts recursive name resolution by running through dns-tree"""
         # [recursion anchor]
+        # success
         if dns_request.response.dns_flags_authoritative:
+            return dns_request
+
+        # error
+        if (
+            dns_request.response.dns_flags_rcode != RCodes.NOERROR.value
+            and dns_request.response.dns_flags_rcode != RCodes.NOTAUTH.value
+        ):
             return dns_request
 
         # [calculation]

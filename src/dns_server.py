@@ -4,7 +4,7 @@ import json
 from threading import Thread
 from typing import Dict, List
 from constants import Constants, ServerTypes
-from dns_format import DnsFormat, DnsRequestFormat, DnsResponseFormat
+from dns_format import DnsFormat, DnsRequestFormat, DnsResponseFormat, QryType, RCodes
 
 
 CONST = Constants()
@@ -101,25 +101,62 @@ class DnsServer:
 
     def resolve_qry(self, dns_query: DnsRequestFormat) -> DnsResponseFormat:
         """searches in zone file for requested ns and its record"""
-        df_zonefile: pd.DataFrame = self.load_zone_file()
         name_of_interest: str = dns_query.name
 
+        # [case 0] - this ns is sought ns
+        if self.name == name_of_interest:
+            return DnsResponseFormat(
+                dns_flags_response=True,
+                dns_flags_rcode=RCodes.NOERROR.value,
+                dns_flags_authoritative=True,
+                dns_ns=self.name,
+                dns_a=CONST.get_ip(server_name=self.name),
+                # TODO
+                dns_count_answers=0,
+                dns_resp_ttl=0,
+            )
+
+        # [case 1] - a child (in zone file) is sought ns
+        df_zonefile: pd.DataFrame = self.load_zone_file()
+
+        entry = None
         # start suffix search
         for i, row in df_zonefile.iterrows():
             if name_of_interest.endswith(row["name"]):
+                entry = row
                 break
 
-        print(row["record"])
+        #  check whether entry is valid or not
+        response: DnsResponseFormat = None
+        if entry is None:
+            response = DnsResponseFormat(
+                dns_flags_response=False,
+                dns_flags_rcode=RCodes.NOTZONE.value,
+                dns_flags_authoritative=None,
+                dns_ns=None,
+                dns_a=None,
+                dns_resp_ttl=None,
+                # TODO
+                dns_count_answers=0,
+            )
 
-        # TODO check for empty row
+        else:
+            # transform row into response
+            record: List[str] = str(entry["record"]).split("  ")
 
-        # transform row into response
-        record: List[str] = str(row["record"]).split("  ")
-        response: DnsResponseFormat = DnsResponseFormat(
-            dns_ns=row["name"],
-            dns_a=record[2],
-            dns_flags_authoritative=name_of_interest == row["name"],
-        )
+            isAuth: bool = name_of_interest == entry["name"]
+            response = DnsResponseFormat(
+                dns_flags_response=True,
+                dns_flags_rcode=RCodes.NOERROR.value
+                if isAuth
+                else RCodes.NOTAUTH.value,
+                dns_flags_authoritative=isAuth,
+                dns_ns=entry["name"],
+                dns_a=record[2],
+                # TODO
+                dns_count_answers=0,
+                dns_resp_ttl=0,
+            )
         return response
 
     def checkpoint_b(self):

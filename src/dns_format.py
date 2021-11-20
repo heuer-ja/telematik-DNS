@@ -37,7 +37,7 @@ class DnsResponseFormat:
     def __init__(
         self,
         dns_flags_response: bool = False,
-        dns_flags_rcode: int = RCodes.NXDOMAIN.value,
+        dns_flags_rcode: int = RCodes.NOTAUTH.value,
         dns_count_answers: int = 0,
         dns_flags_authoritative: bool = False,
         dns_a: str = "127.0.0.11",  # root
