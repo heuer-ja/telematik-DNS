@@ -222,19 +222,6 @@ class DnsServer:
                                        requests_recieved, responses_send, responses_recieved]
             log_df.to_csv(self.log_file, index=False)
 
-    def __increment_empty(self):
-        timestamp = pd.Timestamp.now()
-        ip = self.ip
-        responses_send = 0
-        responses_recieved = 0
-        requests_send = 0
-        requests_recieved = 1
-        row = [timestamp, ip, requests_send, requests_recieved,
-               responses_send, responses_recieved]
-        log_df = pd.DataFrame([row], columns=CONST.LOG_COLUMNS)
-        log_df.to_csv(self.log_file, index=False)
-
-
         # load nameservers
 servers = CONST.MAP_IP_SERVERS[ServerTypes.DNS.name]
 
