@@ -2,6 +2,7 @@ from datetime import datetime
 import socket
 import pandas as pd
 import json
+import threading
 import os
 import csv
 from threading import Thread
@@ -65,6 +66,12 @@ class DnsServer:
         """Initialise log file if not present"""
         self.log_init()
 
+        # init temporary cycle log variables
+        self.requests_send = 0
+        self.requests_recieved = 0
+        self.responses_send = 0
+        self.responses_recieved = 0
+
         # setup server
         self.nameserver = socket.socket(
             family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -83,6 +90,30 @@ class DnsServer:
                    responses_send, responses_recieved]
             log_df = pd.DataFrame([row], columns=CONST.LOG_COLUMNS)
             log_df.to_csv(self.log_file, index=False)
+        threading.Timer(30, self.__log_procedudre).start()
+
+    def __log_procedudre(self):
+        with open(self.log_file, "r") as f:
+            # read our log csv
+            log_df: pd.DataFrame = pd.read_csv(f)
+            # take last log
+            last_log: dict = log_df.iloc[-1].to_dict()
+            # add the current accumulators to the last status
+            timestamp = pd.Timestamp.now()
+            requests_recieved = last_log["Requests Recieved"] + \
+                self.requests_recieved
+            requests_send = last_log["Requests Send"] + self.requests_send
+            responses_send = last_log["Responses Send"] + self.responses_send
+            responses_recieved = last_log["Responses Recieved"] + \
+                self.requests_recieved
+            # zero out the accumulators
+            self.requests_recieved, self.responses_recieved, self.responses_send, self.requests_send = 0, 0, 0, 0
+            # append row in dataframe
+            log_df.loc[len(log_df)] = [timestamp, last_log["IP"], requests_send,
+                                       requests_recieved, responses_send, responses_recieved]
+            # save
+            log_df.to_csv(self.log_file, index=False)
+        threading.Timer(30, self.__log_procedudre).start()
 
     def load_zone_file(self) -> pd.DataFrame:
         df: pd.DataFrame = pd.read_csv(
@@ -193,13 +224,13 @@ class DnsServer:
             print(
                 f"\nserver '{self.name}' received query: '{msg}' from {addr_rec_resolver}"
             )
-            self.increment_req_recieved_log()
+            self.requests_recieved += 1
 
             # resolve request
             dns_req: DnsFormat = DnsFormat().fromJson(json.loads(msg))
             res: DnsResponseFormat = self.resolve_qry(
                 dns_query=dns_req.request)
-
+            self.requests_send += 1
             # response
             dns_res: DnsFormat = DnsFormat(
                 request=dns_req.request,
@@ -207,20 +238,7 @@ class DnsServer:
             )
             msg_res: str = str.encode(dns_res.toJsonStr())
             self.nameserver.sendto(msg_res, addr_rec_resolver)
-
-    def increment_req_recieved_log(self):
-        with open(self.log_file, "r") as f:
-            log_df = pd.read_csv(f)
-            last_log = log_df.iloc[-1].to_dict()
-            print(last_log)
-            timestamp = pd.Timestamp.now()
-            requests_recieved = int(last_log["Requests Recieved"]) + 1
-            requests_send = last_log["Requests Send"]
-            responses_send = last_log["Responses Send"]
-            responses_recieved = last_log["Responses Recieved"]
-            log_df.loc[len(log_df)] = [timestamp, last_log["IP"], requests_send,
-                                       requests_recieved, responses_send, responses_recieved]
-            log_df.to_csv(self.log_file, index=False)
+    # TODO make the logging periodical,local counters
 
         # load nameservers
 servers = CONST.MAP_IP_SERVERS[ServerTypes.DNS.name]
