@@ -26,6 +26,14 @@ class Constants:
                 "127.0.0.17": "pcpools.fuberlin",
             }
         }
+        self.LOG_COLUMNS = [
+            "Timestamp",
+            "IP",
+            "Requests Send",
+            "Requests Recieved",
+            "Responses Send",
+            "Responses Recieved"
+        ]
 
     def get_ip(
         self, server_name: str, server_type: ServerTypes = ServerTypes.DNS
@@ -39,6 +47,5 @@ class Constants:
             None,
         )
 
-    def get_name(self, ip:str, server_type: ServerTypes = ServerTypes.DNS) -> str:
+    def get_name(self, ip: str, server_type: ServerTypes = ServerTypes.DNS) -> str:
         return self.MAP_IP_SERVERS[server_type.name][ip]
-

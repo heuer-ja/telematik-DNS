@@ -20,7 +20,8 @@ class RecursiveResolver:
         self.port = CONST.PORT
 
         # setup server
-        self.rec_resolver = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        self.rec_resolver = socket.socket(
+            family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.rec_resolver.bind((self.ip, self.port))
         print(f"RECURSIVE RESOLVER running ...")
 
@@ -39,8 +40,8 @@ class RecursiveResolver:
             msg = msg.split(" ")
             ns_of_interest: str = msg[0]
 
-            #check if record type is provided
-            if len(msg)<2:
+            # check if record type is provided
+            if len(msg) < 2:
                 msg.append("A")
             record: int = (
                 QryType.A.value
@@ -50,11 +51,13 @@ class RecursiveResolver:
                 else None
             )
             req: DnsFormat = DnsFormat(
-                request=DnsRequestFormat(name=ns_of_interest, dns_qry_type=record)
+                request=DnsRequestFormat(
+                    name=ns_of_interest, dns_qry_type=record)
             )
 
             # recursion - search for nameserver
-            print(f"recursively searching for {ns_of_interest} {record}-record")
+            print(
+                f"recursively searching for {ns_of_interest} {record}-record")
             dns_response: DnsFormat = self.recursion(dns_request=req)
 
             # send response
@@ -68,7 +71,7 @@ class RecursiveResolver:
         # success
         print(dns_request.response)
         if dns_request.response.dns_flags_authoritative:
-            #here do not return the request
+            # here do not return the request
             return dns_request
 
         # error

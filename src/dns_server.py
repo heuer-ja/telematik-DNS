@@ -1,6 +1,8 @@
 import socket
 import pandas as pd
 import json
+import os
+import csv
 from threading import Thread
 from typing import Dict, List
 from constants import Constants, ServerTypes
@@ -21,7 +23,8 @@ class DnsServerStarter:
                 name=name,
                 ip=ip,
                 port=CONST.PORT,
-                zone_file=f"../res/zone_files/{name}.zone",
+                zone_file=f"{os.getcwd()}/res/zone_files/{name}.zone",
+                log_file=f"{os.getcwd()}/res/logs/{ip}.log"
             )
             for ip, name in dns_servers.items()
         ]
@@ -42,7 +45,7 @@ class DnsServer:
         - sends response back to recursive resolver
     """
 
-    def __init__(self, name: str, ip: str, port: int, zone_file: str) -> None:
+    def __init__(self, name: str, ip: str, port: int, zone_file: str, log_file: str) -> None:
         """name of ns"""
         self.name = name
         """ip of ns"""
@@ -55,10 +58,22 @@ class DnsServer:
         """zone file of ns"""
         self.zone_file = zone_file
 
+        """log file of ns"""
+        self.log_file = log_file
+
+        """Initialise log file if not present"""
+        self.log_init()
+
         # setup server
-        self.nameserver = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        self.nameserver = socket.socket(
+            family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.nameserver.bind((self.ip, self.port))
         print(f"server '{self.name}'' runs ...")
+
+    def log_init(self):
+        if not os.path.exists(self.log_file):
+            log_df = pd.DataFrame(columns=CONST.LOG_COLUMNS)
+            log_df.to_csv(self.log_file, index=False)
 
     def load_zone_file(self) -> pd.DataFrame:
         df: pd.DataFrame = pd.read_csv(
@@ -88,7 +103,8 @@ class DnsServer:
             msg, client = self.nameserver.recvfrom(CONST.BUFFER)
             msg = msg.decode("utf-8")
 
-            print(f"server '{self.name}' received query: '{msg}' from {client}")
+            print(
+                f"server '{self.name}' received query: '{msg}' from {client}")
 
             # search for record
             record = self.get_record(name=msg)
@@ -171,7 +187,8 @@ class DnsServer:
 
             # resolve request
             dns_req: DnsFormat = DnsFormat().fromJson(json.loads(msg))
-            res: DnsResponseFormat = self.resolve_qry(dns_query=dns_req.request)
+            res: DnsResponseFormat = self.resolve_qry(
+                dns_query=dns_req.request)
 
             # response
             dns_res: DnsFormat = DnsFormat(
@@ -181,8 +198,13 @@ class DnsServer:
             msg_res: str = str.encode(dns_res.toJsonStr())
             self.nameserver.sendto(msg_res, addr_rec_resolver)
 
+    def increment_req_send_log(self):
+        with open(self.log_file, "w+") as f:
+            log_data = pd.read_csv(f)
+            print(log_data)
 
-# load nameservers
+
+            # load nameservers
 servers = CONST.MAP_IP_SERVERS[ServerTypes.DNS.name]
 
 # start nameservers (servers)
