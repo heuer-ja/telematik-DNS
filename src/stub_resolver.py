@@ -33,7 +33,7 @@ class StubResolver:
         print(response.decode("utf-8"))
 
     def checkpoint_b(self) -> None:
-        msg_request = str.encode(input())
+        msg_request = str.encode(input("Enter message:"))
         rec_res_info = (CONST.IP_REC_RESOLVER, CONST.PORT)
         self.client.sendto(msg_request, rec_res_info)
         msg_response, _ = self.client.recvfrom(CONST.BUFFER)
@@ -41,6 +41,7 @@ class StubResolver:
 
         dns_response: DnsFormat = DnsFormat().fromJson(json.loads(msg_response))
 
+        print(dns_response)
         # TODO check for error
         if dns_response.response.dns_flags_rcode == RCodes.NOERROR.value:
             print(

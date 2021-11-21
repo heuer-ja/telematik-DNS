@@ -32,6 +32,11 @@ class DnsRequestFormat:
         self.name: str = name
         self.dns_qry_type: int = dns_qry_type
 
+    def __repr__(self):
+        text = f"""DNS flags desired : {self.dns_flags_recdesired}
+    Name : {self.name}
+    DNS Query type : {self.dns_qry_type}"""
+
 
 class DnsResponseFormat:
     def __init__(
@@ -52,6 +57,17 @@ class DnsResponseFormat:
         self.dns_ns: str = dns_ns
         self.dns_resp_ttl: int = dns_resp_ttl
 
+    def __repr__(self):
+        text = f"""DNS flags respone :{self.dns_flags_response}
+    DNS flags respone code :{self.dns_flags_rcode} 
+    DNS flags respone code :{self.dns_flags_rcode}
+    DNS answer count:{self.dns_count_answers}
+    DNS flags authorative:{self.dns_flags_authoritative}
+    DNS flags a:{self.dns_a}
+    DNS flags ns:{self.dns_ns}
+    DNS response ttl:{self.dns_resp_ttl}"""
+        return text
+
 
 class DnsFormat:
     """
@@ -59,6 +75,7 @@ class DnsFormat:
         - message format of udp-communication between (a) stub (b) rec. res. (c) ns
         - contains request & response
     """
+
     def __init__(
         self,
         request: DnsRequestFormat = DnsRequestFormat(),
@@ -93,15 +110,19 @@ class DnsFormat:
     def toJson(self) -> Dict:
         json = {
             "request": {
-                "dns.flags.recdesired": self.request.dns_flags_recdesired,  # True <-> recursion should be used by the server
+                # True <-> recursion should be used by the server
+                "dns.flags.recdesired": self.request.dns_flags_recdesired,
                 "dns.qry.name": self.request.name,  # requested name
                 "dns.qry.type": self.request.dns_qry_type,  # requested type: A=1, NS=2
             },
             "response": {
-                "dns.flags.response": self.response.dns_flags_response,  # True <-> a result was found
-                "dns.flags.rcode": self.response.dns_flags_rcode,  # response code, more information see above at rcodes
+                # True <-> a result was found
+                "dns.flags.response": self.response.dns_flags_response,
+                # response code, more information see above at rcodes
+                "dns.flags.rcode": self.response.dns_flags_rcode,
                 "dns.count.answers": self.response.dns_count_answers,  # count of answers
-                "dns.flags.authoritative": self.response.dns_flags_authoritative,  # True <-> auth. DNS server |  False <-> recursive DNS server
+                # True <-> auth. DNS server |  False <-> recursive DNS server
+                "dns.flags.authoritative": self.response.dns_flags_authoritative,
                 "dns.a": self.response.dns_a,  # ip adress
                 "dns.ns": self.response.dns_ns,  # name of ns server if existing
                 "dns.resp.ttl": self.response.dns_resp_ttl,  # TTL of the record

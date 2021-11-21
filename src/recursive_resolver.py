@@ -38,6 +38,10 @@ class RecursiveResolver:
             # tramsform request into format
             msg = msg.split(" ")
             ns_of_interest: str = msg[0]
+
+            #check if record type is provided
+            if len(msg)<2:
+                msg.append("A")
             record: int = (
                 QryType.A.value
                 if msg[1] == "A"
@@ -62,7 +66,9 @@ class RecursiveResolver:
         """starts recursive name resolution by running through dns-tree"""
         # [recursion anchor]
         # success
+        print(dns_request.response)
         if dns_request.response.dns_flags_authoritative:
+            #here do not return the request
             return dns_request
 
         # error
