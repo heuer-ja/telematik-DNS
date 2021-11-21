@@ -1,3 +1,4 @@
+from datetime import datetime
 import socket
 import pandas as pd
 import json
@@ -72,7 +73,15 @@ class DnsServer:
 
     def log_init(self):
         if not os.path.exists(self.log_file):
-            log_df = pd.DataFrame(columns=CONST.LOG_COLUMNS)
+            timestamp = pd.Timestamp.now()
+            ip = self.ip
+            responses_send = 0
+            responses_recieved = 0
+            requests_send = 0
+            requests_recieved = 0
+            row = [timestamp, ip, requests_send, requests_recieved,
+                   responses_send, responses_recieved]
+            log_df = pd.DataFrame([row], columns=CONST.LOG_COLUMNS)
             log_df.to_csv(self.log_file, index=False)
 
     def load_zone_file(self) -> pd.DataFrame:
@@ -184,6 +193,7 @@ class DnsServer:
             print(
                 f"\nserver '{self.name}' received query: '{msg}' from {addr_rec_resolver}"
             )
+            self.increment_req_recieved_log()
 
             # resolve request
             dns_req: DnsFormat = DnsFormat().fromJson(json.loads(msg))
@@ -198,13 +208,34 @@ class DnsServer:
             msg_res: str = str.encode(dns_res.toJsonStr())
             self.nameserver.sendto(msg_res, addr_rec_resolver)
 
-    def increment_req_send_log(self):
-        with open(self.log_file, "w+") as f:
-            log_data = pd.read_csv(f)
-            print(log_data)
+    def increment_req_recieved_log(self):
+        with open(self.log_file, "r") as f:
+            log_df = pd.read_csv(f)
+            last_log = log_df.iloc[-1].to_dict()
+            print(last_log)
+            timestamp = pd.Timestamp.now()
+            requests_recieved = int(last_log["Requests Recieved"]) + 1
+            requests_send = last_log["Requests Send"]
+            responses_send = last_log["Responses Send"]
+            responses_recieved = last_log["Responses Recieved"]
+            log_df.loc[len(log_df)] = [timestamp, last_log["IP"], requests_send,
+                                       requests_recieved, responses_send, responses_recieved]
+            log_df.to_csv(self.log_file, index=False)
+
+    def __increment_empty(self):
+        timestamp = pd.Timestamp.now()
+        ip = self.ip
+        responses_send = 0
+        responses_recieved = 0
+        requests_send = 0
+        requests_recieved = 1
+        row = [timestamp, ip, requests_send, requests_recieved,
+               responses_send, responses_recieved]
+        log_df = pd.DataFrame([row], columns=CONST.LOG_COLUMNS)
+        log_df.to_csv(self.log_file, index=False)
 
 
-            # load nameservers
+        # load nameservers
 servers = CONST.MAP_IP_SERVERS[ServerTypes.DNS.name]
 
 # start nameservers (servers)
