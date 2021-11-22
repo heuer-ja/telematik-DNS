@@ -17,7 +17,8 @@ class StubResolver:
 
     def __init__(self) -> None:
         # setup client
-        self.client = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        self.client = socket.socket(
+            family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
     def checkpoint_a(self) -> None:
         # input
@@ -28,7 +29,8 @@ class StubResolver:
         ip = CONST.get_ip(server_name=input_auth_server)
 
         # send query to server
-        self.client.sendto(str.encode(input_server_of_interest), (ip, CONST.PORT))
+        self.client.sendto(str.encode(
+            input_server_of_interest), (ip, CONST.PORT))
         response, _ = self.client.recvfrom(CONST.BUFFER)
         print(response.decode("utf-8"))
 
