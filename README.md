@@ -1,7 +1,7 @@
 # Execution
 
 ## Script 
-Start programs from root direcory
+Start programs from root directory
 
 1. `python3 src/dns_server.py` - run all nameservers
 2. `python3 src/recursive_resolver.py` - run recursive resolver
