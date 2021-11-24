@@ -34,7 +34,7 @@ class DnsServerStarter:
     def start_all_dns_servers(self):
         """starts all nameservers at one"""
         for server in self.dns_servers:
-            thread = Thread(target=server.checkpoint_b, args=())
+            thread = Thread(target=server.recv, args=())
             thread.start()
 
 
@@ -187,8 +187,10 @@ class DnsServer:
             )
         return response
 
-    def checkpoint_b(self):
-
+    def recv(self):
+        '''
+        waits for query from rec. res.
+        '''
         while True:
             # receive msg
             msg, addr_rec_resolver = self.nameserver.recvfrom(CONST.BUFFER)

@@ -20,7 +20,7 @@ class StubResolver:
         self.client = socket.socket(
             family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
-    def checkpoint_b(self) -> None:
+    def resolve_name(self) -> None:
         msg_request = str.encode(input("Enter message:"))
         rec_res_info = (CONST.IP_REC_RESOLVER, CONST.PORT)
         self.client.sendto(msg_request, rec_res_info)
@@ -42,4 +42,4 @@ class StubResolver:
 
 # start stub resolver (client)
 stub_resolver = StubResolver()
-stub_resolver.checkpoint_b()
+stub_resolver.resolve_name()
