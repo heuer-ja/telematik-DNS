@@ -109,7 +109,7 @@ class RecursiveResolver:
             print(
                 f"recursively searching for {ns_of_interest} {record}-record")
             dns_response: DnsFormat = self.recursion(dns_request=req)
-
+            
             # send response
             print(f"dns_response is {dns_response.toJsonStr()}")
             msg_resolved: str = dns_response.toJsonStr()
