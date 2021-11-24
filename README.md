@@ -1,3 +1,14 @@
+# Execution
+
+## Script 
+Start programs from root direcory
+
+1. `python3 src/dns_server.py` - run all nameservers
+2. `python3 src/recursive_resolver.py` - run recursive resolver
+2. `python3 src/stub_resolver.py` - run stub resolver
+    - input sth. like "linux.pcpools.fuberlin"
+
+    
 # General Knowledge
 - **stub resolver**: client side
 - **recursive resolver**: middleman between client and lots of dns-servers (root NS, top-level-domain NS, second-level-domain NS). 
@@ -53,11 +64,3 @@ Your DNS implementation is used by an application (see HTTP proxy below).
 
 ----------------------------------------------------------------------
 
-
-# Execution
-
-## Script (milestone b)
-1. `python3 dns_server.py` - run all nameservers
-2. `python3 recursive_resolver.py` - run recursive resolver
-2. `python3 stub_resolver.py` - run stub resolver
-    - input sth. like "linux.pcpools.fuberlin"
