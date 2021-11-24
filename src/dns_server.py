@@ -25,8 +25,8 @@ class DnsServerStarter:
                 name=name,
                 ip=ip,
                 port=CONST.PORT,
-                zone_file=f"{os.getcwd()}/res/zone_files/{name}.zone",
-                log_file=f"{os.getcwd()}/res/logs/{ip}.log"
+                zone_file=f"./res/zone_files/{name}.zone",
+                log_file=f"./res/logs/{ip}.log"
             )
             for ip, name in dns_servers.items()
         ]

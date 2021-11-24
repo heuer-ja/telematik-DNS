@@ -21,7 +21,7 @@ class RecursiveResolver:
     def __init__(self) -> None:
         self.ip = CONST.IP_REC_RESOLVER
         self.port = CONST.PORT
-        self.log_file = f"{os.getcwd()}/res/logs/{self.ip}.log"
+        self.log_file = f"./res/logs/{self.ip}.log"
 
         # accumulator variables
         self.requests_recieved = 0
