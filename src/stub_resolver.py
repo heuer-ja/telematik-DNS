@@ -1,6 +1,8 @@
 # client
 import socket
 import json
+import time
+
 from constants import Constants, ServerTypes
 from dns_format import DnsFormat, RCodes
 
@@ -23,6 +25,7 @@ class StubResolver:
     def resolve_name(self) -> None:
         msg_request = str.encode(input("Enter message:"))
         rec_res_info = (CONST.IP_REC_RESOLVER, CONST.PORT)
+        time.sleep(.100)
         self.client.sendto(msg_request, rec_res_info)
         msg_response, _ = self.client.recvfrom(CONST.BUFFER)
         msg_response: str = msg_response.decode("utf-8")

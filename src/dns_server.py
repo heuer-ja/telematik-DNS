@@ -4,6 +4,7 @@ import pandas as pd
 import json
 import threading
 import os
+import time
 import csv
 from threading import Thread
 from typing import Dict, List
@@ -68,9 +69,9 @@ class DnsServer:
 
         # init temporary cycle log variables
         self.requests_send = 0
-        self.requests_recieved = 0
+        self.requests_received = 0
         self.responses_send = 0
-        self.responses_recieved = 0
+        self.responses_received = 0
 
         # setup server
         self.nameserver = socket.socket(
@@ -83,11 +84,11 @@ class DnsServer:
             timestamp = pd.Timestamp.now()
             ip = self.ip
             responses_send = 0
-            responses_recieved = 0
+            responses_received = 0
             requests_send = 0
-            requests_recieved = 0
-            row = [timestamp, ip, requests_send, requests_recieved,
-                   responses_send, responses_recieved]
+            requests_received = 0
+            row = [timestamp, ip, requests_send, requests_received,
+                   responses_send, responses_received]
             log_df = pd.DataFrame([row], columns=CONST.LOG_COLUMNS)
             log_df.to_csv(self.log_file, index=False)
         threading.Timer(30, self.__log_procedudre).start()
@@ -100,17 +101,17 @@ class DnsServer:
             last_log: dict = log_df.iloc[-1].to_dict()
             # add the current accumulators to the last status
             timestamp = pd.Timestamp.now()
-            requests_recieved = last_log["Requests Recieved"] + \
-                self.requests_recieved
+            requests_received = last_log["Requests Received"] + \
+                self.requests_received
             requests_send = last_log["Requests Send"] + self.requests_send
             responses_send = last_log["Responses Send"] + self.responses_send
-            responses_recieved = last_log["Responses Recieved"] + \
-                self.requests_recieved
+            responses_received = last_log["Responses Received"] + \
+                self.requests_received
             # zero out the accumulators
-            self.requests_recieved, self.responses_recieved, self.responses_send, self.requests_send = 0, 0, 0, 0
+            self.requests_received, self.responses_received, self.responses_send, self.requests_send = 0, 0, 0, 0
             # append row in dataframe
             log_df.loc[len(log_df)] = [timestamp, last_log["IP"], requests_send,
-                                       requests_recieved, responses_send, responses_recieved]
+                                       requests_received, responses_send, responses_received]
             # save
             log_df.to_csv(self.log_file, index=False)
         threading.Timer(30, self.__log_procedudre).start()
@@ -198,7 +199,7 @@ class DnsServer:
             print(
                 f"\nserver '{self.name}' received query: '{msg}' from {addr_rec_resolver}"
             )
-            self.requests_recieved += 1
+            self.requests_received += 1
 
             # resolve request
             dns_req: DnsFormat = DnsFormat().fromJson(json.loads(msg))
@@ -211,6 +212,7 @@ class DnsServer:
                 response=res,
             )
             msg_res: str = str.encode(dns_res.toJsonStr())
+            time.sleep(.100)
             self.nameserver.sendto(msg_res, addr_rec_resolver)
     # TODO make the logging periodical,local counters
 
