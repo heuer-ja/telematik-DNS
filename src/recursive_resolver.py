@@ -122,7 +122,6 @@ class RecursiveResolver:
         # success
         print(dns_request.response)
         if dns_request.response.dns_flags_authoritative:
-            # here do not return the request
             return dns_request
 
         # error
