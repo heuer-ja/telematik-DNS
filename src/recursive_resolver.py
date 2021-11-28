@@ -3,6 +3,7 @@ import socket
 import json
 import os
 import time
+import math
 import dns_resolver_cache
 
 import pandas as pd
@@ -56,9 +57,9 @@ class RecursiveResolver:
                    responses_send, responses_received]
             log_df = pd.DataFrame([row], columns=CONST.LOG_COLUMNS)
             log_df.to_csv(self.log_file, index=False)
-        threading.Timer(5, self.__log_procedudre).start()
+        threading.Timer(5, self.__log_procedure).start()
 
-    def __log_procedudre(self):
+    def __log_procedure(self):
         with open(self.log_file, "r") as f:
             # read our log csv
             log_df: pd.DataFrame = pd.read_csv(f)
@@ -79,12 +80,12 @@ class RecursiveResolver:
                                        requests_received, responses_send, responses_received]
             # save
             log_df.to_csv(self.log_file, index=False)
-        threading.Timer(30, self.__log_procedudre).start()
+        threading.Timer(30, self.__log_procedure).start()
 
     def listen(self) -> None:
         """listens for stub resolver request and sends response back"""
 
-        print(f"RECURSIVE RESOLVER listining ...")
+        print(f"RECURSIVE RESOLVER listening ...")
 
         while True:
             # receive request
@@ -106,25 +107,43 @@ class RecursiveResolver:
                 if msg[1] == "NS"
                 else None
             )
+
             req: DnsFormat = DnsFormat(
                 request=DnsRequestFormat(
                     name=ns_of_interest, dns_qry_type=record)
             )
 
-            # recursion - search for nameserver
-            print(
-                f"recursively searching for {ns_of_interest} {record}-record")
-            dns_response: DnsFormat = self.recursion(dns_request=req)
+            cache_record_type: int = record
+            if cache_record_type is None:
+                cache_record_type = QryType.A.value
 
-            # call caching function if request was successful and the server is authorative
-            if dns_response.response.dns_flags_rcode == RCodes.NOERROR.value & \
-                    dns_response.response.dns_flags_authoritative:
-                ttl: int = dns_response.response.dns_resp_ttl
-                timestamp_remove: datetime.datetime = datetime.datetime.now() + datetime.timedelta(0, ttl)
+            cache_entry: CacheEntry = self.cache.get((ns_of_interest, cache_record_type))
+            if cache_entry is None:
+                # recursion - search for nameserver
+                print(
+                    f"recursively searching for {ns_of_interest} {record}-record")
+                dns_response: DnsFormat = self.recursion(dns_request=req)
 
-                self.cache[dns_response.request.name, dns_response.request.dns_qry_type] = \
-                    CacheEntry(dns_response.response.dns_a, timestamp_remove)
+                # call caching function if request was successful and the server is authorative
+                if dns_response.response.dns_flags_rcode == RCodes.NOERROR.value and \
+                        dns_response.response.dns_flags_authoritative:
+                    ttl = dns_response.response.dns_resp_ttl
+                    print(f"typ von ttl: {type(ttl)}")
+                    timestamp_remove: datetime.datetime = (datetime.datetime.now() + datetime.timedelta(0, float(ttl)))
 
+                    self.cache[dns_response.request.name, dns_response.request.dns_qry_type] = \
+                        CacheEntry(dns_response.response.dns_a, timestamp_remove)
+            else:
+                ttl: int = math.ceil((cache_entry.timestamp_remove - datetime.datetime.now()).total_seconds())
+                dns_response: DnsFormat = DnsFormat(request=req.request, response=DnsResponseFormat(
+                    dns_flags_response=True,
+                    dns_flags_rcode=0,
+                    dns_count_answers=0,
+                    dns_flags_authoritative=True,
+                    dns_a=cache_entry.value,
+                    dns_ns=req.request.name,
+                    dns_resp_ttl=ttl,
+                ))
 
             # send response
             print(f"dns_response is {dns_response.toJsonStr()}")

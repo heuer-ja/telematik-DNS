@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, List
+from typing import Dict, Tuple
 from dns_format import QryType
 
 
@@ -17,7 +17,7 @@ class CacheEntry:
         self.timestamp_remove: datetime.datetime = timestamp_remove
 
 
-class Cache(Dict[(str, QryType), CacheEntry]):
+class Cache(Dict[Tuple[str, int], CacheEntry]):
     """
     Represents the Cache
         - is a Dictionary with domain name and query time as key and a CacheEntry as value
