@@ -1,3 +1,4 @@
+import datetime
 import socket
 import json
 import os
@@ -9,6 +10,7 @@ import threading
 
 from constants import Constants
 from dns_format import DnsFormat, DnsRequestFormat, DnsResponseFormat, QryType, RCodes
+from dns_resolver_cache import CacheEntry
 
 CONST = Constants()
 
@@ -114,9 +116,14 @@ class RecursiveResolver:
                 f"recursively searching for {ns_of_interest} {record}-record")
             dns_response: DnsFormat = self.recursion(dns_request=req)
 
-            # call caching function if request was successful
+            # call caching function if request was successful and the server is authorative
+            if dns_response.response.dns_flags_rcode == RCodes.NOERROR.value & \
+                    dns_response.response.dns_flags_authoritative:
+                ttl: int = dns_response.response.dns_resp_ttl
+                timestamp_remove: datetime.datetime = datetime.datetime.now() + datetime.timedelta(0, ttl)
 
-
+                self.cache[dns_response.request.name, dns_response.request.dns_qry_type] = \
+                    CacheEntry(dns_response.response.dns_a, timestamp_remove)
 
 
             # send response

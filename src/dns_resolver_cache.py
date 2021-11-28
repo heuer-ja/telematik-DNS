@@ -1,31 +1,27 @@
+import datetime
 from typing import Dict, List
 from dns_format import QryType
 
 
 class CacheEntry:
+    """
+    Represents an entry in the cache
+        - contains the value of the cached entry and a timestamp that expresses until when this entry is valid
+    """
     def __init__(
             self,
             value: str,
-            rr_type: QryType,
-            ttl: int,
+            timestamp_remove: datetime.datetime,
     ) -> None:
         self.value: str = value
-        self.rr_type: QryType = rr_type
-        self.ttl: int = ttl
+        self.timestamp_remove: datetime.datetime = timestamp_remove
 
 
-class Cache(Dict[str, List[CacheEntry]]):
+class Cache(Dict[(str, QryType), CacheEntry]):
     """
-    Class that represents the Cache
-        - is a Dictionary with domain as key and a list of CacheEntries as value
+    Represents the Cache
+        - is a Dictionary with domain name and query time as key and a CacheEntry as value
     """
     def __init__(self): None
 
-    def get_cache_entries_by_domain_and_rr_type(self, domain: str, rr_type: str) -> List[CacheEntry]:
-        domain_entries: List[CacheEntry] = self.get(self, domain)
-        result_list: List[CacheEntry] = {}
-        for entry in domain_entries:
-            if entry.rr_type == rr_type:
-                result_list.append(entry)
-        return result_list
 
