@@ -1,6 +1,7 @@
 import datetime
+import threading
+
 from typing import Dict, Tuple
-from dns_format import QryType
 
 
 class CacheEntry:
@@ -22,6 +23,13 @@ class Cache(Dict[Tuple[str, int], CacheEntry]):
     Represents the Cache
         - is a Dictionary with domain name and query time as key and a CacheEntry as value
     """
-    def __init__(self): None
+    def __init__(self) -> None:
+        threading.Timer(30, self.__cache_cleanup).start()
 
+    def __cache_cleanup(self):
+        print("Executing cache cleanup")
+        for key, cache_entry in self.copy().items():
+            if cache_entry.timestamp_remove < datetime.datetime.now():
+                self.pop(key)
+        threading.Timer(30, self.__cache_cleanup).start()
 
