@@ -24,40 +24,41 @@ class Handler(SimpleHTTPRequestHandler):
             query_components = dict(qc.split("=") for qc in query.split("&"))
             if "url" not in query_components:
                 message = "Sorry, but your query is invallid."
-
-            url = query_components["url"]
-
-            # see if suffix is within local dns
-            suffix_helper = url.split(".")
-            suffix = suffix_helper[len(suffix_helper)-1]
-            local_dns_suffixes = ["telematik", "fuberlin"]
-            if suffix in local_dns_suffixes:
-                msg_request = str.encode(url)
-                rec_res_info = (CONST.IP_REC_RESOLVER, CONST.PORT)
-                client = socket.socket(
-                    family=socket.AF_INET, type=socket.SOCK_DGRAM)
-                client.sendto(msg_request, rec_res_info)
-                msg_response, _ = client.recvfrom(CONST.BUFFER)
-                msg_response: str = msg_response.decode("utf-8")
-                dns_response: DnsFormat = DnsFormat().fromJson(json.loads(msg_response))
-                if dns_response.response.dns_flags_rcode == RCodes.NOERROR.value:
-                    print(
-                        f"{dns_response.request.name} has ip adress {dns_response.response.dns_a}"
-                    )
-
-                else:
-                    print(
-                        f"name {dns_response.request.name} could not be resolved")
             else:
-                # conn = http.client.HTTPConnection(url)
-                # conn.request("GET", "/")
-                # response = conn.getresponse()
-                # message = response
-                if url.startswith("http://"):
-                    self.copyfile(urllib.request.urlopen(url), self.wfile)
+                url = query_components["url"]
+
+                # see if suffix is within local dns
+                suffix_helper = url.split(".")
+                suffix = suffix_helper[len(suffix_helper)-1]
+                local_dns_suffixes = ["telematik", "fuberlin"]
+                if suffix in local_dns_suffixes:
+                    msg_request = str.encode(url)
+                    rec_res_info = (CONST.IP_REC_RESOLVER, CONST.PORT)
+                    client = socket.socket(
+                        family=socket.AF_INET, type=socket.SOCK_DGRAM)
+                    client.sendto(msg_request, rec_res_info)
+                    msg_response, _ = client.recvfrom(CONST.BUFFER)
+                    msg_response: str = msg_response.decode("utf-8")
+                    dns_response: DnsFormat = DnsFormat().fromJson(json.loads(msg_response))
+                    if dns_response.response.dns_flags_rcode == RCodes.NOERROR.value:
+                        print(
+                            f"{dns_response.request.name} has ip adress {dns_response.response.dns_a}"
+                        )
+
+                    else:
+                        print(
+                            f"name {dns_response.request.name} could not be resolved")
                 else:
-                    url = "http://" + url
-                    self.copyfile(urllib.request.urlopen(url), self.wfile)
+                    # conn = http.client.HTTPConnection(url)
+                    # conn.request("GET", "/")
+                    # response = conn.getresponse()
+                    # message = response
+                    if url.startswith("http://"):
+                        self.copyfile(urllib.request.urlopen(url), self.wfile)
+                    else:
+                        url = "http://" + url
+                        self.copyfile(urllib.request.urlopen(url), self.wfile)
+                    message = "test"
         else:
             message = "No query parameters passed."
 
