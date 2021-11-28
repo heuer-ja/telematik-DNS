@@ -184,7 +184,7 @@ class DnsServer:
                 dns_a=record[2],
                 # TODO
                 dns_count_answers=0,
-                dns_resp_ttl=0,
+                dns_resp_ttl=record[0].split(" ")[0],
             )
         return response
 

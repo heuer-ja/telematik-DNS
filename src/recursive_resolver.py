@@ -2,6 +2,7 @@ import socket
 import json
 import os
 import time
+import dns_resolver_cache
 
 import pandas as pd
 import threading
@@ -24,6 +25,7 @@ class RecursiveResolver:
         self.ip = CONST.IP_REC_RESOLVER
         self.port = CONST.PORT
         self.log_file = f"./res/logs/{self.ip}.log"
+        self.cache = dns_resolver_cache.Cache()
 
         # accumulator variables
         self.requests_received = 0
@@ -112,7 +114,10 @@ class RecursiveResolver:
                 f"recursively searching for {ns_of_interest} {record}-record")
             dns_response: DnsFormat = self.recursion(dns_request=req)
 
-            # caching function
+            # call caching function if request was successful
+
+
+
 
             # send response
             print(f"dns_response is {dns_response.toJsonStr()}")
@@ -152,7 +157,7 @@ class RecursiveResolver:
         self.responses_received += 1
         print(f"REC. RES. received: \n {dns_response.toJsonStr()}\n")
 
-        # [recusion step]
+        # [recursion step]
         return self.recursion(dns_request=dns_response)
 
 
