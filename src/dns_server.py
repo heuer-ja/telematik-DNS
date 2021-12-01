@@ -7,7 +7,7 @@ import os
 import csv
 from threading import Thread
 from typing import Dict, List
-from constants import Constants, ServerTypes
+from constants import Constants, ServerTypes, ColorsPr
 from dns_format import DnsFormat, DnsRequestFormat, DnsResponseFormat, QryType, RCodes
 
 
@@ -26,7 +26,7 @@ class DnsServerStarter:
                 ip=ip,
                 port=CONST.PORT,
                 zone_file=f"./res/zone_files/{name}.zone",
-                log_file=f"./res/logs/{ip}.log"
+                log_file=f"./res/logs/{ip}.log",
             )
             for ip, name in dns_servers.items()
         ]
@@ -47,7 +47,9 @@ class DnsServer:
         - sends response back to recursive resolver
     """
 
-    def __init__(self, name: str, ip: str, port: int, zone_file: str, log_file: str) -> None:
+    def __init__(
+        self, name: str, ip: str, port: int, zone_file: str, log_file: str
+    ) -> None:
         """name of ns"""
         self.name = name
         """ip of ns"""
@@ -73,10 +75,13 @@ class DnsServer:
         self.responses_recieved = 0
 
         # setup server
-        self.nameserver = socket.socket(
-            family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        self.nameserver = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.nameserver.bind((self.ip, self.port))
-        print(f"server '{self.name}'' runs ...")
+        DnsServer.print(f"server '{self.name}'' runs ...")
+
+    @staticmethod
+    def print(msg: str) -> str:
+        print(f"{ColorsPr.PURPLE}{msg}{ColorsPr.NORMAL}")
 
     def log_init(self):
         if not os.path.exists(self.log_file):
@@ -86,8 +91,14 @@ class DnsServer:
             responses_recieved = 0
             requests_send = 0
             requests_recieved = 0
-            row = [timestamp, ip, requests_send, requests_recieved,
-                   responses_send, responses_recieved]
+            row = [
+                timestamp,
+                ip,
+                requests_send,
+                requests_recieved,
+                responses_send,
+                responses_recieved,
+            ]
             log_df = pd.DataFrame([row], columns=CONST.LOG_COLUMNS)
             log_df.to_csv(self.log_file, index=False)
         threading.Timer(30, self.__log_procedudre).start()
@@ -100,17 +111,26 @@ class DnsServer:
             last_log: dict = log_df.iloc[-1].to_dict()
             # add the current accumulators to the last status
             timestamp = pd.Timestamp.now()
-            requests_recieved = last_log["Requests Recieved"] + \
-                self.requests_recieved
+            requests_recieved = last_log["Requests Recieved"] + self.requests_recieved
             requests_send = last_log["Requests Send"] + self.requests_send
             responses_send = last_log["Responses Send"] + self.responses_send
-            responses_recieved = last_log["Responses Recieved"] + \
-                self.requests_recieved
+            responses_recieved = last_log["Responses Recieved"] + self.requests_recieved
             # zero out the accumulators
-            self.requests_recieved, self.responses_recieved, self.responses_send, self.requests_send = 0, 0, 0, 0
+            (
+                self.requests_recieved,
+                self.responses_recieved,
+                self.responses_send,
+                self.requests_send,
+            ) = (0, 0, 0, 0)
             # append row in dataframe
-            log_df.loc[len(log_df)] = [timestamp, last_log["IP"], requests_send,
-                                       requests_recieved, responses_send, responses_recieved]
+            log_df.loc[len(log_df)] = [
+                timestamp,
+                last_log["IP"],
+                requests_send,
+                requests_recieved,
+                responses_send,
+                responses_recieved,
+            ]
             # save
             log_df.to_csv(self.log_file, index=False)
         threading.Timer(30, self.__log_procedudre).start()
@@ -123,7 +143,6 @@ class DnsServer:
             names=["name", "record"],
         )
         return df
-
 
     ####################[checkpoint b]#############################
 
@@ -188,22 +207,21 @@ class DnsServer:
         return response
 
     def recv(self):
-        '''
+        """
         waits for query from rec. res.
-        '''
+        """
         while True:
             # receive msg
             msg, addr_rec_resolver = self.nameserver.recvfrom(CONST.BUFFER)
             msg = msg.decode("utf-8")
-            print(
+            DnsServer.print(
                 f"\nserver '{self.name}' received query: '{msg}' from {addr_rec_resolver}"
             )
             self.requests_recieved += 1
 
             # resolve request
             dns_req: DnsFormat = DnsFormat().fromJson(json.loads(msg))
-            res: DnsResponseFormat = self.resolve_qry(
-                dns_query=dns_req.request)
+            res: DnsResponseFormat = self.resolve_qry(dns_query=dns_req.request)
             self.requests_send += 1
             # response
             dns_res: DnsFormat = DnsFormat(
@@ -212,9 +230,12 @@ class DnsServer:
             )
             msg_res: str = str.encode(dns_res.toJsonStr())
             self.nameserver.sendto(msg_res, addr_rec_resolver)
+
     # TODO make the logging periodical,local counters
 
-        # load nameservers
+    # load nameservers
+
+
 servers = CONST.MAP_IP_SERVERS[ServerTypes.DNS.name]
 
 # start nameservers (servers)

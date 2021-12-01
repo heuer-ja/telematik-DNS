@@ -7,7 +7,7 @@ class ServerTypes(Enum):
     DNS = 1
     HTTP = 2
 
-class ColorsPr(Enum):
+class ColorsPr:
     ''''
     use for colored prints, e.g. 
     print(f"{ColorsPr.YELLOW}Test message{ColorsPr.NORMAL}")
