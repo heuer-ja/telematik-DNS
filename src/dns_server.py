@@ -136,12 +136,30 @@ class DnsServer:
         threading.Timer(30, self.__log_procedudre).start()
 
     def load_zone_file(self) -> pd.DataFrame:
-        df: pd.DataFrame = pd.read_csv(
+        df_raw: pd.DataFrame = pd.read_csv(
             self.zone_file,
             sep="\t",
             header=None,  # no column names in .zone-files
             names=["name", "record"],
         )
+
+        # detailed dataframe
+        df: pd.DataFrame = pd.DataFrame(
+            columns=["name", "ttl", "protocol", "type", "ip"], data=[]
+        )
+        for _, row in df_raw.iterrows():
+            record_split: List[str] = row["record"].split()
+            df = df.append(
+                {
+                    "name": row["name"],
+                    "ttl": record_split[0],
+                    "protocol": record_split[1],
+                    "type": record_split[2],
+                    "ip": record_split[3],
+                },
+                ignore_index=True,
+            )
+
         return df
 
     ####################[checkpoint b]#############################
@@ -167,7 +185,7 @@ class DnsServer:
         df_zonefile: pd.DataFrame = self.load_zone_file()
 
         entry = None
-        # start suffix search
+        # start suffix search in zone_file
         for i, row in df_zonefile.iterrows():
             if name_of_interest.endswith(row["name"]):
                 entry = row
@@ -189,8 +207,6 @@ class DnsServer:
 
         else:
             # transform row into response
-            record: List[str] = str(entry["record"]).split("  ")
-
             isAuth: bool = name_of_interest == entry["name"]
             response = DnsResponseFormat(
                 dns_flags_response=True,
@@ -199,7 +215,7 @@ class DnsServer:
                 else RCodes.NOTAUTH.value,
                 dns_flags_authoritative=isAuth,
                 dns_ns=entry["name"],
-                dns_a=record[2],
+                dns_a=entry["ip"],
                 # TODO
                 dns_count_answers=0,
                 dns_resp_ttl=0,
