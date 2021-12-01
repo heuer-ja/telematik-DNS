@@ -4,7 +4,6 @@ import urllib.request
 from constants import Constants
 from dns_format import DnsFormat, RCodes
 import socket
-import http.client
 import requests
 import json
 
@@ -17,6 +16,8 @@ session_url = ""
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, request, client_adress, server, **kwargs):
         self.session_url = ""
+        self.socket = socket.socket(
+            family=socket.AF_INET, type=socket.SOCK_DGRAM)
         super(SimpleHTTPRequestHandler, self).__init__(
             request, client_adress, server, **kwargs)
 
@@ -51,6 +52,18 @@ class Handler(SimpleHTTPRequestHandler):
                     msg_response: str = msg_response.decode("utf-8")
                     dns_response: DnsFormat = DnsFormat().fromJson(json.loads(msg_response))
                     if dns_response.response.dns_flags_rcode == RCodes.NOERROR.value:
+                        entries = dns_response.response.dns_a.split(":")
+                        ip = entries[0]
+                        # connect via tcp
+                        print(entries)
+                        if len(entries) > 1:
+                            adress = "http://" + dns_response.response.dns_a
+                            # self.send_response(page)
+                            # self.copyfile(handle, self.wfile)
+                            req = urllib.request.Request(adress)
+                            with urllib.request.urlopen(req) as response:
+                                the_page = response.read()
+                                self.wfile.write(the_page)
                         print(
                             f"{dns_response.request.name} has ip adress {dns_response.response.dns_a}"
                         )
