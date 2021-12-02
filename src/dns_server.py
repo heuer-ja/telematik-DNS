@@ -77,7 +77,7 @@ class DnsServer:
         # setup server
         self.nameserver = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.nameserver.bind((self.ip, self.port))
-        DnsServer.print(f"server '{self.name}'' runs ...")
+        DnsServer.print(f"server '{self.name}'' is running ...")
 
     @staticmethod
     def print(msg: str) -> str:
@@ -138,7 +138,7 @@ class DnsServer:
     def load_zone_file(self) -> pd.DataFrame:
         df_raw: pd.DataFrame = pd.read_csv(
             self.zone_file,
-            sep="\t",
+            sep=";",
             header=None,  # no column names in .zone-files
             names=["name", "record"],
         )
@@ -154,8 +154,12 @@ class DnsServer:
                     "name": row["name"],
                     "ttl": record_split[0],
                     "protocol": record_split[1],
-                    "type": record_split[2],
                     "ip": record_split[3],
+                    "type": QryType.NS.value
+                    if record_split[2] == "NS"
+                    else QryType.A.value
+                    if record_split[2] == "A"
+                    else QryType.INVALID.value,
                 },
                 ignore_index=True,
             )
@@ -166,10 +170,10 @@ class DnsServer:
 
     def resolve_qry(self, dns_query: DnsRequestFormat) -> DnsResponseFormat:
         """searches in zone file for requested ns and its record"""
-        name_of_interest: str = dns_query.name
 
-        # [case 0] - this ns is sought ns
-        if self.name == name_of_interest:
+        # [case 0] - root
+        # TODO
+        if "root" == dns_query.name:
             return DnsResponseFormat(
                 dns_flags_response=True,
                 dns_flags_rcode=RCodes.NOERROR.value,
@@ -181,46 +185,61 @@ class DnsServer:
                 dns_resp_ttl=0,
             )
 
-        # [case 1] - a child (in zone file) is sought ns
+        # [case 1] - look at childs
         df_zonefile: pd.DataFrame = self.load_zone_file()
+        for _, row in df_zonefile.iterrows():
+            # [case 1a] - a child (in zone file) has sought name & record
+            if dns_query.name == row["name"] and dns_query.dns_qry_type == row["type"]:
+                return DnsResponseFormat(
+                    dns_flags_response=True,
+                    dns_flags_rcode=RCodes.NOERROR.value,
+                    dns_flags_authoritative=True,
+                    dns_ns=row["name"],
+                    dns_a=row["ip"],
+                    # TODO
+                    dns_count_answers=0,
+                    dns_resp_ttl=0,
+                )
 
-        entry = None
-        # start suffix search in zone_file
-        for i, row in df_zonefile.iterrows():
-            if name_of_interest.endswith(row["name"]):
-                entry = row
-                break
+            # [case 1b] - a child (in zone file) has sought name & but not record
+            elif (
+                dns_query.name == row["name"] and dns_query.dns_qry_type == row["type"]
+            ):
+                return DnsResponseFormat(
+                    dns_flags_response=True,
+                    dns_flags_rcode=RCodes.SERVFAIL.value,
+                    dns_flags_authoritative=True,
+                    dns_ns=row["name"],
+                    dns_a=row["ip"],
+                    # TODO
+                    dns_count_answers=0,
+                    dns_resp_ttl=0,
+                )
 
-        #  check whether entry is valid or not
-        response: DnsResponseFormat = None
-        if entry is None:
-            response = DnsResponseFormat(
-                dns_flags_response=False,
-                dns_flags_rcode=RCodes.NOTZONE.value,
-                dns_flags_authoritative=None,
-                dns_ns=None,
-                dns_a=None,
-                dns_resp_ttl=None,
-                # TODO
-                dns_count_answers=0,
-            )
+            # [case 1c] - a child (in zone file) has suffix of sought name
+            # start suffix search in zone_file
+            elif dns_query.name.endswith(row["name"]):
+                return DnsResponseFormat(
+                    dns_flags_response=False,
+                    dns_flags_rcode=RCodes.NOTAUTH.value,
+                    dns_flags_authoritative=False,
+                    dns_ns=row["name"],
+                    dns_a=row["ip"],
+                    # TODO
+                    dns_count_answers=0,
+                    dns_resp_ttl=0,
+                )
 
-        else:
-            # transform row into response
-            isAuth: bool = name_of_interest == entry["name"]
-            response = DnsResponseFormat(
-                dns_flags_response=True,
-                dns_flags_rcode=RCodes.NOERROR.value
-                if isAuth
-                else RCodes.NOTAUTH.value,
-                dns_flags_authoritative=isAuth,
-                dns_ns=entry["name"],
-                dns_a=entry["ip"],
-                # TODO
-                dns_count_answers=0,
-                dns_resp_ttl=0,
-            )
-        return response
+        # [case 2] no child is or knows the sought domain
+        return DnsResponseFormat(
+            dns_flags_response=False,
+            dns_flags_rcode=RCodes.NXDOMAIN.value,
+            dns_flags_authoritative=None,
+            dns_ns=None,
+            dns_a=None,
+            dns_resp_ttl=None,
+            dns_count_answers=None,
+        )
 
     def recv(self):
         """
@@ -230,19 +249,23 @@ class DnsServer:
             # receive msg
             msg, addr_rec_resolver = self.nameserver.recvfrom(CONST.BUFFER)
             msg = msg.decode("utf-8")
-            DnsServer.print(
-                f"\nserver '{self.name}' received query: '{msg}' from {addr_rec_resolver}"
-            )
             self.requests_recieved += 1
 
             # resolve request
             dns_req: DnsFormat = DnsFormat().fromJson(json.loads(msg))
+            DnsServer.print(
+                f"""------------------------\nnameserver {self.name} received query: {dns_req.request.name} {dns_req.request.dns_qry_type}"""
+            )
             res: DnsResponseFormat = self.resolve_qry(dns_query=dns_req.request)
             self.requests_send += 1
+
             # response
             dns_res: DnsFormat = DnsFormat(
                 request=dns_req.request,
                 response=res,
+            )
+            DnsServer.print(
+                f"nameserver {self.name} sends response:{dns_res.response}"
             )
             msg_res: str = str.encode(dns_res.toJsonStr())
             self.nameserver.sendto(msg_res, addr_rec_resolver)

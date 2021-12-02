@@ -17,33 +17,29 @@ class StubResolver:
 
     def __init__(self) -> None:
         # setup client
-        self.client = socket.socket(
-            family=socket.AF_INET, type=socket.SOCK_DGRAM)
-
+        self.client = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
     @staticmethod
     def print(msg: str) -> str:
         print(f"{ColorsPr.GREEN}{msg}{ColorsPr.NORMAL}")
 
-
     def resolve_name(self) -> None:
-        msg_request = str.encode(input(f"{ColorsPr.GREEN}Enter message: {ColorsPr.NORMAL}"))
-        rec_res_info = (CONST.IP_REC_RESOLVER, CONST.PORT)
-        self.client.sendto(msg_request, rec_res_info)
+
+        # input & send
+        msg_request = str.encode(
+            input(f"{ColorsPr.GREEN}Enter message: {ColorsPr.NORMAL}")
+        )
+        self.client.sendto(msg_request, (CONST.IP_REC_RESOLVER, CONST.PORT))
+
+        # receive
         msg_response, _ = self.client.recvfrom(CONST.BUFFER)
         msg_response: str = msg_response.decode("utf-8")
-
         dns_response: DnsFormat = DnsFormat().fromJson(json.loads(msg_response))
 
-        StubResolver.print(dns_response)
-        # TODO check for error
-        if dns_response.response.dns_flags_rcode == RCodes.NOERROR.value:
-            StubResolver.print(
-                f"{dns_response.request.name} has ip adress {dns_response.response.dns_a}"
-            )
-
-        else:
-            StubResolver.print(f"name {dns_response.request.name} could not be resolved")
+        # print
+        StubResolver.print(
+            f"response for {dns_response.request.name} {dns_response.request.dns_qry_type} is:\n{dns_response.response}"
+        )
 
 
 # start stub resolver (client)

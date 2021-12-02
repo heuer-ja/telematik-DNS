@@ -1,2 +1,2 @@
-news.router.telematik	300 IN  A  127.0.0.23
-shop.router.telematik	300 IN  A  127.0.0.24
+news.router.telematik;300 IN A 127.0.0.23
+shop.router.telematik;300 IN A 127.0.0.24

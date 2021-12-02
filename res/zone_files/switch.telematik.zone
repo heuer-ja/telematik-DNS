@@ -1,2 +1,2 @@
-www.switch.telematik	300 IN  A  127.0.0.21
-mail.switch.telematik	300 IN  A  127.0.0.22
+www.switch.telematik;300 IN A 127.0.0.21
+mail.switch.telematik;300 IN A 127.0.0.22
