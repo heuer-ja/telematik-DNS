@@ -176,7 +176,9 @@ class DnsServer:
         if "root" == dns_query.name:
             return DnsResponseFormat(
                 dns_flags_response=True,
-                dns_flags_rcode=RCodes.NOERROR.value,
+                dns_flags_rcode=RCodes.NOERROR.value
+                if dns_query.dns_qry_type == QryType.A.value
+                else RCodes.SERVFAIL.value,
                 dns_flags_authoritative=True,
                 dns_ns=self.name,
                 dns_a=CONST.get_ip(server_name=self.name),
