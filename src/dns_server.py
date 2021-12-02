@@ -168,22 +168,22 @@ class DnsServer:
 
     ####################[checkpoint b]#############################
 
-    def resolve_qry(self, dns_query: DnsRequestFormat) -> DnsResponseFormat:
+    def resolve_qry(self, dns_format: DnsFormat) -> DnsResponseFormat:
         """searches in zone file for requested ns and its record"""
 
         # [case 0] - root
         # TODO
-        if "root" == dns_query.name:
+        if "root" == dns_format.request.name:
             return DnsResponseFormat(
                 dns_flags_response=True,
                 dns_flags_rcode=RCodes.NOERROR.value
-                if dns_query.dns_qry_type == QryType.A.value
+                if dns_format.request.dns_qry_type == QryType.A.value
                 else RCodes.SERVFAIL.value,
                 dns_flags_authoritative=True,
                 dns_ns=self.name,
                 dns_a=CONST.get_ip(server_name=self.name),
                 # TODO
-                dns_count_answers=0,
+                dns_count_answers=dns_format.response.dns_count_answers + 1,
                 dns_resp_ttl=0,
             )
 
@@ -191,7 +191,10 @@ class DnsServer:
         df_zonefile: pd.DataFrame = self.load_zone_file()
         for _, row in df_zonefile.iterrows():
             # [case 1a] - a child (in zone file) has sought name & record
-            if dns_query.name == row["name"] and dns_query.dns_qry_type == row["type"]:
+            if (
+                dns_format.request.name == row["name"]
+                and dns_format.request.dns_qry_type == row["type"]
+            ):
                 return DnsResponseFormat(
                     dns_flags_response=True,
                     dns_flags_rcode=RCodes.NOERROR.value,
@@ -199,12 +202,12 @@ class DnsServer:
                     dns_ns=row["name"],
                     dns_a=row["ip"],
                     # TODO
-                    dns_count_answers=0,
+                    dns_count_answers=dns_format.response.dns_count_answers + 1,
                     dns_resp_ttl=0,
                 )
 
             # [case 1b] - a child (in zone file) has sought name & but not record
-            elif dns_query.name == row["name"]:
+            elif dns_format.request.name == row["name"]:
                 return DnsResponseFormat(
                     dns_flags_response=True,
                     dns_flags_rcode=RCodes.SERVFAIL.value,
@@ -212,13 +215,13 @@ class DnsServer:
                     dns_ns=row["name"],
                     dns_a=row["ip"],
                     # TODO
-                    dns_count_answers=0,
+                    dns_count_answers=dns_format.response.dns_count_answers + 1,
                     dns_resp_ttl=0,
                 )
 
             # [case 1c] - a child (in zone file) has suffix of sought name
             # start suffix search in zone_file
-            elif dns_query.name.endswith(row["name"]):
+            elif dns_format.request.name.endswith(row["name"]):
                 return DnsResponseFormat(
                     dns_flags_response=False,
                     dns_flags_rcode=RCodes.NOTAUTH.value,
@@ -226,7 +229,7 @@ class DnsServer:
                     dns_ns=row["name"],
                     dns_a=row["ip"],
                     # TODO
-                    dns_count_answers=0,
+                    dns_count_answers=dns_format.response.dns_count_answers + 1,
                     dns_resp_ttl=0,
                 )
 
@@ -238,7 +241,7 @@ class DnsServer:
             dns_ns=None,
             dns_a=None,
             dns_resp_ttl=None,
-            dns_count_answers=None,
+            dns_count_answers=dns_format.response.dns_count_answers + 1,
         )
 
     def recv(self):
@@ -256,7 +259,8 @@ class DnsServer:
             DnsServer.print(
                 f"""------------------------\nnameserver {self.name} received query: {dns_req.request.name} {dns_req.request.dns_qry_type}"""
             )
-            res: DnsResponseFormat = self.resolve_qry(dns_query=dns_req.request)
+            res: DnsResponseFormat = self.resolve_qry(dns_format=dns_req)
+
             self.requests_send += 1
 
             # response
