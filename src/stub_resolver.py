@@ -1,6 +1,7 @@
 # client
 import socket
 import json
+from typing import List
 from constants import ColorsPr, Constants, ServerTypes
 from dns_format import DnsFormat, RCodes
 
@@ -23,13 +24,11 @@ class StubResolver:
     def print(msg: str) -> str:
         print(f"{ColorsPr.GREEN}{msg}{ColorsPr.NORMAL}")
 
-    def resolve_name(self) -> None:
+    def resolve_name(self, input_query: str) -> None:
 
         # input & send
-        msg_request = str.encode(
-            input(f"{ColorsPr.GREEN}Enter message: {ColorsPr.NORMAL}")
-        )
-        self.client.sendto(msg_request, (CONST.IP_REC_RESOLVER, CONST.PORT))
+        StubResolver.print(f"\n-------------------------\nQuery: {input_query}")
+        self.client.sendto(str.encode(input_query), (CONST.IP_REC_RESOLVER, CONST.PORT))
 
         # receive
         msg_response, _ = self.client.recvfrom(CONST.BUFFER)
@@ -38,10 +37,21 @@ class StubResolver:
 
         # print
         StubResolver.print(
-            f"response for {dns_response.request.name} {dns_response.request.dns_qry_type} is:\n{dns_response.response}"
+            f"\nResponse: \n{dns_response.response}"
         )
 
 
 # start stub resolver (client)
 stub_resolver = StubResolver()
-stub_resolver.resolve_name()
+
+test_queries: List[str] = [
+    "root A",
+    "root NS",
+    "switch.telematik NS",
+    "easy.homework.fuberlin A",
+    "youtube.com NS",
+]
+
+for query in test_queries:
+    stub_resolver.resolve_name(input_query=query)
+    input("Press [ENTER] for next test")
