@@ -202,9 +202,7 @@ class DnsServer:
                 )
 
             # [case 1b] - a child (in zone file) has sought name & but not record
-            elif (
-                dns_query.name == row["name"] and dns_query.dns_qry_type == row["type"]
-            ):
+            elif dns_query.name == row["name"]:
                 return DnsResponseFormat(
                     dns_flags_response=True,
                     dns_flags_rcode=RCodes.SERVFAIL.value,
@@ -264,9 +262,7 @@ class DnsServer:
                 request=dns_req.request,
                 response=res,
             )
-            DnsServer.print(
-                f"nameserver {self.name} sends response:{dns_res.response}"
-            )
+            DnsServer.print(f"nameserver {self.name} sends response:{dns_res.response}")
             msg_res: str = str.encode(dns_res.toJsonStr())
             self.nameserver.sendto(msg_res, addr_rec_resolver)
 
