@@ -1,5 +1,6 @@
 # client
 import socket
+import time
 import json
 from typing import List
 from constants import ColorsPr, Constants, ServerTypes
@@ -54,4 +55,3 @@ test_queries: List[str] = [
 
 for query in test_queries:
     stub_resolver.resolve_name(input_query=query)
-    input("Press [ENTER] for next test")
