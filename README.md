@@ -145,7 +145,6 @@ dns_format = {
 | Management | Leo, Leslie, Joel |
 | Documentation | Leo, Leslie, Lukas, Joel, Viktoriya |
 
-Translated with www.DeepL.com/Translator (free version)
 
 
 
