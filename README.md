@@ -129,7 +129,7 @@ dns_format = {
 ## 3. Team & Participation
 
 **Legende**
-- Leo (Leo TODO)
+- Leo (Leo Lojewski)
 - Leslie (Leslie Hoferichter)
 - Lukas (Lukas Ludwig) 
 - Joel (Joel Heuer)
