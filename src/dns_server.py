@@ -172,7 +172,6 @@ class DnsServer:
         """searches in zone file for requested ns and its record"""
 
         # [case 0] - root
-        # TODO
         if "root" == dns_format.request.name:
             return DnsResponseFormat(
                 dns_flags_response=True,
@@ -182,7 +181,7 @@ class DnsServer:
                 dns_flags_authoritative=True,
                 dns_ns=self.name,
                 dns_a=CONST.get_ip(server_name=self.name),
-                # TODO
+                # TODO ttl
                 dns_count_answers=dns_format.response.dns_count_answers + 1,
                 dns_resp_ttl=0,
             )
@@ -201,7 +200,7 @@ class DnsServer:
                     dns_flags_authoritative=True,
                     dns_ns=row["name"],
                     dns_a=row["ip"],
-                    # TODO
+                    # TODO ttl
                     dns_count_answers=dns_format.response.dns_count_answers + 1,
                     dns_resp_ttl=0,
                 )
@@ -214,7 +213,7 @@ class DnsServer:
                     dns_flags_authoritative=True,
                     dns_ns=row["name"],
                     dns_a=row["ip"],
-                    # TODO
+                    # TODO ttl
                     dns_count_answers=dns_format.response.dns_count_answers + 1,
                     dns_resp_ttl=0,
                 )
@@ -228,7 +227,7 @@ class DnsServer:
                     dns_flags_authoritative=False,
                     dns_ns=row["name"],
                     dns_a=row["ip"],
-                    # TODO
+                    # TODO ttl
                     dns_count_answers=dns_format.response.dns_count_answers + 1,
                     dns_resp_ttl=0,
                 )
