@@ -3,6 +3,12 @@ Start programs from root directory
 
 ## Prerequirements
 One must install <code>pandas</code>, as it is required for our project.
+This could be done, depending on the package manager with: 
+>conda install pandas
+
+or 
+
+>pip3 install pandas
 
 1. `python3 src/dns_server.py` - run all nameservers
 2. `python3 src/recursive_resolver.py` - run recursive resolver
