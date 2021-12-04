@@ -5,18 +5,19 @@ from typing import Dict
 
 class RCodes(Enum):
     NOERROR = 0  # DNS Query completed successfully
-    FORMERR = 1  # DNS Query Format Error
+    # FORMERR = 1  # DNS Query Format Error
     SERVFAIL = 2  # Server failed to complete the DNS request
     NXDOMAIN = 3  # Domain name does not exist
-    NOTIMP = 4  # Function not implemented
-    REFUSED = 5  # The server refused to answer for the query
-    YXDOMAIN = 6  # Name that should not exist, does exist
-    XRRSET = 7  # RR set that should not exist, does exist
+    # NOTIMP = 4  # Function not implemented
+    # REFUSED = 5  # The server refused to answer for the query
+    # YXDOMAIN = 6  # Name that should not exist, does exist
+    # XRRSET = 7  # RR set that should not exist, does exist
     NOTAUTH = 8  # Server not authoritative for the zone
-    NOTZONE = 9  # Name not in zone
+    # NOTZONE = 9  # Name not in zone
 
 
 class QryType(Enum):
+    INVALID = (0,)  # invalid record
     NS = 1  # ns record
     A = 2  # a record
 
@@ -58,14 +59,14 @@ class DnsResponseFormat:
         self.dns_resp_ttl: int = dns_resp_ttl
 
     def __repr__(self):
-        text = f"""DNS flags respone :{self.dns_flags_response}
-    DNS flags respone code :{self.dns_flags_rcode} 
-    DNS flags respone code :{self.dns_flags_rcode}
-    DNS answer count:{self.dns_count_answers}
-    DNS flags authorative:{self.dns_flags_authoritative}
-    DNS flags a:{self.dns_a}
-    DNS flags ns:{self.dns_ns}
-    DNS response ttl:{self.dns_resp_ttl}"""
+        text = f"""
+    response: {self.dns_flags_response}
+    rcode: {self.dns_flags_rcode}
+    answer count: {self.dns_count_answers}
+    authorative: {self.dns_flags_authoritative}
+    a: {self.dns_a}
+    ns: {self.dns_ns}
+    ttl: {self.dns_resp_ttl}"""
         return text
 
 

@@ -1,2 +1,2 @@
-homework.fuberlin   300 IN  NS  127.0.0.16
-pcpools.fuberlin	300 IN  NS  127.0.0.17
+homework.fuberlin;300 IN NS 127.0.0.16
+pcpools.fuberlin;300 IN NS 127.0.0.17

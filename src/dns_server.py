@@ -7,7 +7,7 @@ import os
 import csv
 from threading import Thread
 from typing import Dict, List
-from constants import Constants, ServerTypes
+from constants import Constants, ServerTypes, ColorsPr
 from dns_format import DnsFormat, DnsRequestFormat, DnsResponseFormat, QryType, RCodes
 
 
@@ -25,8 +25,8 @@ class DnsServerStarter:
                 name=name,
                 ip=ip,
                 port=CONST.PORT,
-                zone_file=f"{os.getcwd()}/res/zone_files/{name}.zone",
-                log_file=f"{os.getcwd()}/res/logs/{ip}.log"
+                zone_file=f"./res/zone_files/{name}.zone",
+                log_file=f"./res/logs/{ip}.log",
             )
             for ip, name in dns_servers.items()
         ]
@@ -34,7 +34,7 @@ class DnsServerStarter:
     def start_all_dns_servers(self):
         """starts all nameservers at one"""
         for server in self.dns_servers:
-            thread = Thread(target=server.checkpoint_b, args=())
+            thread = Thread(target=server.recv, args=())
             thread.start()
 
 
@@ -47,7 +47,9 @@ class DnsServer:
         - sends response back to recursive resolver
     """
 
-    def __init__(self, name: str, ip: str, port: int, zone_file: str, log_file: str) -> None:
+    def __init__(
+        self, name: str, ip: str, port: int, zone_file: str, log_file: str
+    ) -> None:
         """name of ns"""
         self.name = name
         """ip of ns"""
@@ -73,10 +75,13 @@ class DnsServer:
         self.responses_recieved = 0
 
         # setup server
-        self.nameserver = socket.socket(
-            family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        self.nameserver = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.nameserver.bind((self.ip, self.port))
-        print(f"server '{self.name}'' runs ...")
+        DnsServer.print(f"server '{self.name}'' is running ...")
+
+    @staticmethod
+    def print(msg: str) -> str:
+        print(f"{ColorsPr.PURPLE}{msg}{ColorsPr.NORMAL}")
 
     def log_init(self):
         if not os.path.exists(self.log_file):
@@ -86,8 +91,14 @@ class DnsServer:
             responses_recieved = 0
             requests_send = 0
             requests_recieved = 0
-            row = [timestamp, ip, requests_send, requests_recieved,
-                   responses_send, responses_recieved]
+            row = [
+                timestamp,
+                ip,
+                requests_send,
+                requests_recieved,
+                responses_send,
+                responses_recieved,
+            ]
             log_df = pd.DataFrame([row], columns=CONST.LOG_COLUMNS)
             log_df.to_csv(self.log_file, index=False)
         threading.Timer(120, self.__log_procedudre).start()
@@ -100,147 +111,171 @@ class DnsServer:
             last_log: dict = log_df.iloc[-1].to_dict()
             # add the current accumulators to the last status
             timestamp = pd.Timestamp.now()
-            requests_recieved = last_log["Requests Recieved"] + \
-                self.requests_recieved
+            requests_recieved = last_log["Requests Recieved"] + self.requests_recieved
             requests_send = last_log["Requests Send"] + self.requests_send
             responses_send = last_log["Responses Send"] + self.responses_send
-            responses_recieved = last_log["Responses Recieved"] + \
-                self.requests_recieved
+            responses_recieved = last_log["Responses Recieved"] + self.requests_recieved
             # zero out the accumulators
-            self.requests_recieved, self.responses_recieved, self.responses_send, self.requests_send = 0, 0, 0, 0
+            (
+                self.requests_recieved,
+                self.responses_recieved,
+                self.responses_send,
+                self.requests_send,
+            ) = (0, 0, 0, 0)
             # append row in dataframe
-            log_df.loc[len(log_df)] = [timestamp, last_log["IP"], requests_send,
-                                       requests_recieved, responses_send, responses_recieved]
+            log_df.loc[len(log_df)] = [
+                timestamp,
+                last_log["IP"],
+                requests_send,
+                requests_recieved,
+                responses_send,
+                responses_recieved,
+            ]
             # save
             log_df.to_csv(self.log_file, index=False)
         threading.Timer(120, self.__log_procedudre).start()
 
     def load_zone_file(self) -> pd.DataFrame:
-        df: pd.DataFrame = pd.read_csv(
+        df_raw: pd.DataFrame = pd.read_csv(
             self.zone_file,
-            sep="\t",
+            sep=";",
             header=None,  # no column names in .zone-files
             names=["name", "record"],
         )
+
+        # detailed dataframe
+        df: pd.DataFrame = pd.DataFrame(
+            columns=["name", "ttl", "protocol", "type", "ip"], data=[]
+        )
+        for _, row in df_raw.iterrows():
+            record_split: List[str] = row["record"].split()
+            df = df.append(
+                {
+                    "name": row["name"],
+                    "ttl": record_split[0],
+                    "protocol": record_split[1],
+                    "ip": record_split[3],
+                    "type": QryType.NS.value
+                    if record_split[2] == "NS"
+                    else QryType.A.value
+                    if record_split[2] == "A"
+                    else QryType.INVALID.value,
+                },
+                ignore_index=True,
+            )
+
         return df
-
-    ####################[checkpoint a]#############################
-    def get_record(self, name: str) -> str:
-        df = pd.read_csv(
-            self.zone_file,
-            sep="\t",
-            header=None,  # no column names in .zone-files
-            names=["name", "record"],
-        )
-
-        list_of_records = df.loc[df["name"] == name]["record"]
-        record = list_of_records.iloc[0]
-        return record
-
-    def checkpoint_a(self):
-        while True:
-            # receive msg
-            msg, client = self.nameserver.recvfrom(CONST.BUFFER)
-            msg = msg.decode("utf-8")
-
-            print(
-                f"server '{self.name}' received query: '{msg}' from {client}")
-
-            # search for record
-            record = self.get_record(name=msg)
-
-            # response to client
-            response = f"{msg} has record: {record}"
-            self.nameserver.sendto(str.encode(response), client)
 
     ####################[checkpoint b]#############################
 
-    def resolve_qry(self, dns_query: DnsRequestFormat) -> DnsResponseFormat:
+    def resolve_qry(self, dns_format: DnsFormat) -> DnsResponseFormat:
         """searches in zone file for requested ns and its record"""
-        name_of_interest: str = dns_query.name
 
-        # [case 0] - this ns is sought ns
-        if self.name == name_of_interest:
+        # [case 0] - root
+        if "root" == dns_format.request.name:
             return DnsResponseFormat(
                 dns_flags_response=True,
-                dns_flags_rcode=RCodes.NOERROR.value,
+                dns_flags_rcode=RCodes.NOERROR.value
+                if dns_format.request.dns_qry_type == QryType.A.value
+                else RCodes.SERVFAIL.value,
                 dns_flags_authoritative=True,
                 dns_ns=self.name,
                 dns_a=CONST.get_ip(server_name=self.name),
-                # TODO
-                dns_count_answers=0,
+                # TODO ttl
+                dns_count_answers=dns_format.response.dns_count_answers + 1,
                 dns_resp_ttl=0,
             )
 
-        # [case 1] - a child (in zone file) is sought ns
+        # [case 1] - look at childs
         df_zonefile: pd.DataFrame = self.load_zone_file()
+        for _, row in df_zonefile.iterrows():
+            # [case 1a] - a child (in zone file) has sought name & record
+            if (
+                dns_format.request.name == row["name"]
+                and dns_format.request.dns_qry_type == row["type"]
+            ):
+                return DnsResponseFormat(
+                    dns_flags_response=True,
+                    dns_flags_rcode=RCodes.NOERROR.value,
+                    dns_flags_authoritative=True,
+                    dns_ns=row["name"],
+                    dns_a=row["ip"],
+                    # TODO ttl
+                    dns_count_answers=dns_format.response.dns_count_answers + 1,
+                    dns_resp_ttl=0,
+                )
 
-        entry = None
-        # start suffix search
-        for i, row in df_zonefile.iterrows():
-            if name_of_interest.endswith(row["name"]):
-                entry = row
-                break
+            # [case 1b] - a child (in zone file) has sought name & but not record
+            elif dns_format.request.name == row["name"]:
+                return DnsResponseFormat(
+                    dns_flags_response=True,
+                    dns_flags_rcode=RCodes.SERVFAIL.value,
+                    dns_flags_authoritative=True,
+                    dns_ns=row["name"],
+                    dns_a=row["ip"],
+                    # TODO ttl
+                    dns_count_answers=dns_format.response.dns_count_answers + 1,
+                    dns_resp_ttl=0,
+                )
 
-        #  check whether entry is valid or not
-        response: DnsResponseFormat = None
-        if entry is None:
-            response = DnsResponseFormat(
-                dns_flags_response=False,
-                dns_flags_rcode=RCodes.NOTZONE.value,
-                dns_flags_authoritative=None,
-                dns_ns=None,
-                dns_a=None,
-                dns_resp_ttl=None,
-                # TODO
-                dns_count_answers=0,
-            )
+            # [case 1c] - a child (in zone file) has suffix of sought name
+            # start suffix search in zone_file
+            elif dns_format.request.name.endswith(row["name"]):
+                return DnsResponseFormat(
+                    dns_flags_response=False,
+                    dns_flags_rcode=RCodes.NOTAUTH.value,
+                    dns_flags_authoritative=False,
+                    dns_ns=row["name"],
+                    dns_a=row["ip"],
+                    # TODO ttl
+                    dns_count_answers=dns_format.response.dns_count_answers + 1,
+                    dns_resp_ttl=0,
+                )
 
-        else:
-            # transform row into response
-            record: List[str] = str(entry["record"]).split("  ")
+        # [case 2] no child is or knows the sought domain
+        return DnsResponseFormat(
+            dns_flags_response=False,
+            dns_flags_rcode=RCodes.NXDOMAIN.value,
+            dns_flags_authoritative=None,
+            dns_ns=None,
+            dns_a=None,
+            dns_resp_ttl=None,
+            dns_count_answers=dns_format.response.dns_count_answers + 1,
+        )
 
-            isAuth: bool = name_of_interest == entry["name"]
-            response = DnsResponseFormat(
-                dns_flags_response=True,
-                dns_flags_rcode=RCodes.NOERROR.value
-                if isAuth
-                else RCodes.NOTAUTH.value,
-                dns_flags_authoritative=isAuth,
-                dns_ns=entry["name"],
-                dns_a=record[2],
-                # TODO
-                dns_count_answers=0,
-                dns_resp_ttl=0,
-            )
-        return response
-
-    def checkpoint_b(self):
-
+    def recv(self):
+        """
+        waits for query from rec. res.
+        """
         while True:
             # receive msg
             msg, addr_rec_resolver = self.nameserver.recvfrom(CONST.BUFFER)
             msg = msg.decode("utf-8")
-            print(
-                f"\nserver '{self.name}' received query: '{msg}' from {addr_rec_resolver}"
-            )
             self.requests_recieved += 1
 
             # resolve request
             dns_req: DnsFormat = DnsFormat().fromJson(json.loads(msg))
-            res: DnsResponseFormat = self.resolve_qry(
-                dns_query=dns_req.request)
+            DnsServer.print(
+                f"""------------------------\nnameserver {self.name} received query: {dns_req.request.name} {dns_req.request.dns_qry_type}"""
+            )
+            res: DnsResponseFormat = self.resolve_qry(dns_format=dns_req)
+
             self.requests_send += 1
+
             # response
             dns_res: DnsFormat = DnsFormat(
                 request=dns_req.request,
                 response=res,
             )
+            DnsServer.print(f"nameserver {self.name} sends response:{dns_res.response}")
             msg_res: str = str.encode(dns_res.toJsonStr())
             self.nameserver.sendto(msg_res, addr_rec_resolver)
+
     # TODO make the logging periodical,local counters
 
-        # load nameservers
+    # load nameservers
+
+
 servers = CONST.MAP_IP_SERVERS[ServerTypes.DNS.name]
 
 # start nameservers (servers)

@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import threading
 
-from constants import Constants
+from constants import ColorsPr, Constants
 from dns_format import DnsFormat, DnsRequestFormat, DnsResponseFormat, QryType, RCodes
 
 CONST = Constants()
@@ -21,7 +21,7 @@ class RecursiveResolver:
     def __init__(self) -> None:
         self.ip = CONST.IP_REC_RESOLVER
         self.port = CONST.PORT
-        self.log_file = f"{os.getcwd()}/res/logs/{self.ip}.log"
+        self.log_file = f"./res/logs/{self.ip}.log"
 
         # accumulator variables
         self.requests_recieved = 0
@@ -36,7 +36,11 @@ class RecursiveResolver:
         self.rec_resolver = socket.socket(
             family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.rec_resolver.bind((self.ip, self.port))
-        print(f"RECURSIVE RESOLVER running ...")
+        RecursiveResolver.print(f"RECURSIVE RESOLVER is running ...")
+
+    @staticmethod
+    def print(msg: str) -> str:
+        print(f"{ColorsPr.YELLOW}{msg}{ColorsPr.NORMAL}")
 
     def log_init(self) -> None:
         if not os.path.exists(self.log_file):
@@ -46,8 +50,14 @@ class RecursiveResolver:
             responses_recieved = 0
             requests_send = 0
             requests_recieved = 0
-            row = [timestamp, ip, requests_send, requests_recieved,
-                   responses_send, responses_recieved]
+            row = [
+                timestamp,
+                ip,
+                requests_send,
+                requests_recieved,
+                responses_send,
+                responses_recieved,
+            ]
             log_df = pd.DataFrame([row], columns=CONST.LOG_COLUMNS)
             log_df.to_csv(self.log_file, index=False)
         threading.Timer(120, self.__log_procedudre).start()
@@ -67,10 +77,21 @@ class RecursiveResolver:
             responses_recieved = last_log["Responses Recieved"] + \
                 self.requests_recieved
             # zero out the accumulators
-            self.requests_recieved, self.responses_recieved, self.responses_send, self.requests_send = 0, 0, 0, 0
+            (
+                self.requests_recieved,
+                self.responses_recieved,
+                self.responses_send,
+                self.requests_send,
+            ) = (0, 0, 0, 0)
             # append row in dataframe
-            log_df.loc[len(log_df)] = [timestamp, last_log["IP"], requests_send,
-                                       requests_recieved, responses_send, responses_recieved]
+            log_df.loc[len(log_df)] = [
+                timestamp,
+                last_log["IP"],
+                requests_send,
+                requests_recieved,
+                responses_send,
+                responses_recieved,
+            ]
             # save
             log_df.to_csv(self.log_file, index=False)
         threading.Timer(120, self.__log_procedudre).start()
@@ -78,40 +99,40 @@ class RecursiveResolver:
     def listen(self) -> None:
         """listens for stub resolver request and sends response back"""
 
-        print(f"RECURSIVE RESOLVER listining ...")
+        RecursiveResolver.print(f"RECURSIVE RESOLVER listining ...")
 
         while True:
             # receive request
             msg, addr_client = self.rec_resolver.recvfrom(CONST.BUFFER)
             msg = msg.decode("utf-8")
-            print(f"RECURSIVE RESOLVER received: '{msg}' from {addr_client}")
+            RecursiveResolver.print(
+                f"------------------\nRECURSIVE RESOLVER received query: '{msg}' from {addr_client}"
+            )
             self.requests_recieved += 1
-            # tramsform request into format
-            msg = msg.split(" ")
-            ns_of_interest: str = msg[0]
 
-            # check if record type is provided
-            if len(msg) < 2:
-                msg.append("A")
+            # tramsform request into format
+            msg_parts = msg.split()
+            ns_of_interest: str = msg_parts[0]
             record: int = (
                 QryType.A.value
-                if msg[1] == "A"
+                if msg_parts[1] == "A"
                 else QryType.NS.value
-                if msg[1] == "NS"
-                else None
+                if msg_parts[1] == "NS"
+                else QryType.INVALID.value
             )
+
             req: DnsFormat = DnsFormat(
                 request=DnsRequestFormat(
                     name=ns_of_interest, dns_qry_type=record)
             )
 
             # recursion - search for nameserver
-            print(
-                f"recursively searching for {ns_of_interest} {record}-record")
+            RecursiveResolver.print(
+                f"recursively searching for {ns_of_interest} {record}-record"
+            )
             dns_response: DnsFormat = self.recursion(dns_request=req)
 
             # send response
-            print(f"dns_response is {dns_response.toJsonStr()}")
             msg_resolved: str = dns_response.toJsonStr()
             self.responses_send += 1
             self.rec_resolver.sendto(str.encode(msg_resolved), addr_client)
@@ -120,7 +141,6 @@ class RecursiveResolver:
         """starts recursive name resolution by running through dns-tree"""
         # [recursion anchor]
         # success
-        print(dns_request.response)
         if dns_request.response.dns_flags_authoritative:
             return dns_request
 
@@ -143,7 +163,7 @@ class RecursiveResolver:
         msg = msg.decode("utf-8")
         dns_response: DnsFormat = DnsFormat.fromJson(json.loads(msg))
         self.responses_recieved += 1
-        print(f"REC. RES. received: \n {dns_response.toJsonStr()}\n")
+        RecursiveResolver.print(f"\nreceived: {dns_response.response}")
 
         # [recusion step]
         return self.recursion(dns_request=dns_response)

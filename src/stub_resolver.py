@@ -1,7 +1,9 @@
 # client
 import socket
+import time
 import json
-from constants import Constants, ServerTypes
+from typing import List
+from constants import ColorsPr, Constants, ServerTypes
 from dns_format import DnsFormat, RCodes
 
 CONST = Constants()
@@ -17,43 +19,39 @@ class StubResolver:
 
     def __init__(self) -> None:
         # setup client
-        self.client = socket.socket(
-            family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        self.client = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
-    def checkpoint_a(self) -> None:
-        # input
-        input_auth_server = "homework.fuberlin"
-        input_server_of_interest = f"easy.{input_auth_server}"
+    @staticmethod
+    def print(msg: str) -> str:
+        print(f"{ColorsPr.GREEN}{msg}{ColorsPr.NORMAL}")
 
-        # get ip adress
-        ip = CONST.get_ip(server_name=input_auth_server)
+    def resolve_name(self, input_query: str) -> None:
 
-        # send query to server
-        self.client.sendto(str.encode(
-            input_server_of_interest), (ip, CONST.PORT))
-        response, _ = self.client.recvfrom(CONST.BUFFER)
-        print(response.decode("utf-8"))
+        # input & send
+        StubResolver.print(f"\n-------------------------\nQuery: {input_query}")
+        self.client.sendto(str.encode(input_query), (CONST.IP_REC_RESOLVER, CONST.PORT))
 
-    def checkpoint_b(self) -> None:
-        msg_request = str.encode(input("Enter message:"))
-        rec_res_info = (CONST.IP_REC_RESOLVER, CONST.PORT)
-        self.client.sendto(msg_request, rec_res_info)
+        # receive
         msg_response, _ = self.client.recvfrom(CONST.BUFFER)
         msg_response: str = msg_response.decode("utf-8")
-
         dns_response: DnsFormat = DnsFormat().fromJson(json.loads(msg_response))
 
-        print(dns_response)
-        # TODO check for error
-        if dns_response.response.dns_flags_rcode == RCodes.NOERROR.value:
-            print(
-                f"{dns_response.request.name} has ip adress {dns_response.response.dns_a}"
-            )
-
-        else:
-            print(f"name {dns_response.request.name} could not be resolved")
+        # print
+        StubResolver.print(
+            f"\nResponse: \n{dns_response.response}"
+        )
 
 
 # start stub resolver (client)
 stub_resolver = StubResolver()
-stub_resolver.checkpoint_b()
+
+test_queries: List[str] = [
+    "root A",
+    "root NS",
+    "switch.telematik NS",
+    "easy.homework.fuberlin A",
+    "youtube.com NS",
+]
+
+for query in test_queries:
+    stub_resolver.resolve_name(input_query=query)
