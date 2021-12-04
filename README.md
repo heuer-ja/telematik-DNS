@@ -1,6 +1,9 @@
 # 1. Execution
 Start programs from root directory
 
+## Prerequirements
+One must install <code>pandas</code>, as it is required for our project.
+
 1. `python3 src/dns_server.py` - run all nameservers
 2. `python3 src/recursive_resolver.py` - run recursive resolver
 2. `python3 src/stub_resolver.py` - run stub resolver
@@ -9,6 +12,8 @@ Start programs from root directory
 
 ### Error handling
 - If, for whatever reason, the used addresses are blocked after running the scripts, the following command will help under *Ubuntu*:
+
+
 
 `pkill -9 -f src/dns_server.py && pkill -9 -f src/recursive_resolver.py && pkill -9 -f src/stub_resolver.py`
 
