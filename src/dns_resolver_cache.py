@@ -27,8 +27,8 @@ class Cache(Dict[Tuple[str, int], CacheEntry]):
         threading.Timer(30, self.__cache_cleanup).start()
 
     def __cache_cleanup(self):
-        print("Executing cache cleanup")
         for key, cache_entry in self.copy().items():
+            print(f"key: {key} , value: {cache_entry.value} , timestamp_remove: {cache_entry.timestamp_remove}")
             if cache_entry.timestamp_remove < datetime.datetime.now():
                 self.pop(key)
         threading.Timer(30, self.__cache_cleanup).start()

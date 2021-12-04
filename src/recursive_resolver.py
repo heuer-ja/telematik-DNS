@@ -123,16 +123,6 @@ class RecursiveResolver:
                 print(
                     f"recursively searching for {ns_of_interest} {record}-record")
                 dns_response: DnsFormat = self.recursion(dns_request=req)
-
-                # call caching function if request was successful and the server is authorative
-                if dns_response.response.dns_flags_rcode == RCodes.NOERROR.value and \
-                        dns_response.response.dns_flags_authoritative:
-                    ttl = dns_response.response.dns_resp_ttl
-                    print(f"typ von ttl: {type(ttl)}")
-                    timestamp_remove: datetime.datetime = (datetime.datetime.now() + datetime.timedelta(0, float(ttl)))
-
-                    self.cache[dns_response.request.name, dns_response.request.dns_qry_type] = \
-                        CacheEntry(dns_response.response.dns_a, timestamp_remove)
             else:
                 ttl: int = math.ceil((cache_entry.timestamp_remove - datetime.datetime.now()).total_seconds())
                 dns_response: DnsFormat = DnsFormat(request=req.request, response=DnsResponseFormat(
@@ -181,6 +171,19 @@ class RecursiveResolver:
         msg = msg.decode("utf-8")
         dns_response: DnsFormat = DnsFormat.fromJson(json.loads(msg))
         self.responses_received += 1
+
+        # call caching function if request was successful or points to another name server
+        if dns_response.response.dns_flags_rcode == RCodes.NOERROR.value or dns_response.response.dns_flags_rcode == RCodes.NOTAUTH.value:
+            ttl = dns_response.response.dns_resp_ttl
+            timestamp_remove: datetime.datetime = (datetime.datetime.now() + datetime.timedelta(0, float(ttl)))
+
+            if dns_response.response.dns_flags_rcode == RCodes.NOERROR.value:
+                self.cache[dns_response.request.name, dns_response.request.dns_qry_type] = \
+                    CacheEntry(dns_response.response.dns_a, timestamp_remove)
+            elif dns_response.response.dns_flags_rcode == RCodes.NOTAUTH.value:
+                self.cache[dns_response.response.dns_ns, QryType.NS.value] = \
+                    CacheEntry(dns_response.response.dns_a, timestamp_remove)
+
         print(f"REC. RES. received: \n {dns_response.toJsonStr()}\n")
 
         # [recursion step]
