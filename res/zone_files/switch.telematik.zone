@@ -1,3 +1,3 @@
-www.switch.telematik	300 IN  A  127.0.0.1
-mail.switch.telematik	300 IN  A  127.0.0.2
-http.switch.telematik	300 IN  A  127.0.0.80:8080
+www.switch.telematik;300 IN A 127.0.0.21
+mail.switch.telematik;300 IN A 127.0.0.22
+http.switch.telematik;300 IN A 127.0.0.80:8080
