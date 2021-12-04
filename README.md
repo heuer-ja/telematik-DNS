@@ -10,10 +10,14 @@ or
 
 >pip3 install pandas
 
+
+## Execution
 1. `python3 src/dns_server.py` - run all nameservers
 2. `python3 src/recursive_resolver.py` - run recursive resolver
-2. `python3 src/stub_resolver.py` - run stub resolver
-    input sth. like "linux.pcpools.fuberlin NS"
+3. `python3 src/stub_resolver.py` - run stub resolver
+    - input sth. like "linux.pcpools.fuberlin NS"
+4. `python3 src/http_proxy.py` - run HTTP proxy
+5. `python3 src/http_server.py` - run HTTP server  
 
 
 ### Error handling
@@ -198,13 +202,3 @@ Your stub resolver is able to resolve any name in the list via the recursive res
 
 ----------------------------------------------------------------------
 
-
-# Execution
-
-## Script (milestone b)
-1. `python3 src/dns_server.py` - run all nameservers
-2. `python3 src/recursive_resolver.py` - run recursive resolver
-3. `python3 src/stub_resolver.py` - run stub resolver
-    - input sth. like "linux.pcpools.fuberlin"
-4. `python3 src/http_proxy.py` - run HTTP proxy
-5. `python3 src/http_server.py` - run HTTP server  
