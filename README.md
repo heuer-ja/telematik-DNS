@@ -119,11 +119,31 @@ dns_format = {
 3. return answer 
     - The determined answer is sent back to the `RecursiveResolver` in the form of `DnsFormat`
 
+
+### Logging
+The logging procedure is implemented at the recursive resolver and the dns servers. If log files are not initialised, this is taken care of at server start. Furthermore, there are several accumulator counters at each server, which do keep track of the incoming/outgoing requests/responses and every *n* seconds a new line with the incremented with the accumulator old values from the log is added, in order to keep track of the measures. The procedure runs in the background and does so, until the server is shut down.
+
 ## 2.3. Cache
 `TODO Lukas`
 
-## 2.4. Web Proxy
-`TODO Viki`
+## 2.4. HTTP Proxy / HTTP Server
+HTTP Proxy
+Your DNS implementation is used by an application (see HTTP proxy below).
+
+Two http servers were implemented in order to solve the second part of the project description. 
+
+- The HTTP server is implemented in the <code>http_server.py</code> file and runs on 127.0.0.80 and port 8080. We did add the server to the zone file of the switch.telematik authorative dns server, in order to be able to obtain it afterwards in the http proxy. The server does return a simple web-page, which says "You reached the server!". The domain name we chose corresponds to **http.switch.telematik**
+- The HTTP proxy is implemented in the <code>http_proxy.py</code> file. As a GET request is required, we pass the domain name as an url [query parameter](https://en.wikipedia.org/wiki/Query_string).
+  - the ip adress of the HTTP proxy is 127.0.0.90 and the chosen port is 8090.
+  - The query parameter is named url. Therefore a request shall be formatted in the following way: 
+  > http://127.0.0.90:8090?url=www.google.com
+  
+  where www.google.com is just an example url. Addititonal cases like google.com are not considered, due to the overcomplication of the task.
+  If 
+  > http://127.0.0.90:8090?url=http.switch.telematik
+  
+  is requested, then the response from the HTTP server from the previous point shall be returned. Otherwise the response shall be returned by another server, whose IP is resolved by the system and not by our own DNS server.
+
 
 
 ## 3. Team & Participation
@@ -164,26 +184,6 @@ Your stub resolver is able to resolve any name in the list via the recursive res
     - since we are using localhost (127.0.0.x), there is just little delay
         --> use sleep()-method for sending methods
 
-
-### Logging
-The logging procedure is implemented at the recursive resolver and the dns servers. If log files are not initialised, this is taken care of at server start. Furthermore, there are several accumulator counters at each server, which do keep track of the incoming/outgoing requests/responses and every *n* seconds a new line with the incremented with the accumulator old values from the log is added, in order to keep track of the measures. The procedure runs in the background and does so, until the server is shut down.
-
-### (d) HTTP Proxy
-Your DNS implementation is used by an application (see HTTP proxy below).
-
-Two http servers were implemented in order to solve the second part of the project description. 
-
-- The HTTP server is implemented in the <code>http_server.py</code> file and runs on 127.0.0.80 and port 8080. We did add the server to the zone file of the switch.telematik authorative dns server, in order to be able to obtain it afterwards in the http proxy. The server does return a simple web-page, which says "You reached the server!". The domain name we chose corresponds to **http.switch.telematik**
-- The HTTP proxy is implemented in the <code>http_proxy.py</code> file. As a GET request is required, we pass the domain name as an url [query parameter](https://en.wikipedia.org/wiki/Query_string).
-  - the ip adress of the HTTP proxy is 127.0.0.90 and the chosen port is 8090.
-  - The query parameter is named url. Therefore a request shall be formatted in the following way: 
-  > http://127.0.0.90:8090?url=www.google.com
-  
-  where www.google.com is just an example url. Addititonal cases like google.com are not considered, due to the overcomplication of the task.
-  If 
-  > http://127.0.0.90:8090?url=http.switch.telematik
-  
-  is requested, then the response from the HTTP server from the previous point shall be returned. Otherwise the response shall be returned by another server, whose IP is resolved by the system and not by our own DNS server.
 
 ----------------------------------------------------------------------
 
