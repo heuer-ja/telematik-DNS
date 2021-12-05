@@ -46,9 +46,9 @@ class Constants:
             "Timestamp",
             "IP",
             "Requests Send",
-            "Requests Recieved",
+            "Requests Received",
             "Responses Send",
-            "Responses Recieved"
+            "Responses Received"
         ]
 
     def get_ip(

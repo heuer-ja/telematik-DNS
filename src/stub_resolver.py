@@ -3,6 +3,10 @@ import socket
 import time
 import json
 from typing import List
+import time
+import datetime
+import math
+
 from constants import ColorsPr, Constants, ServerTypes
 from dns_format import DnsFormat, RCodes
 
@@ -29,28 +33,37 @@ class StubResolver:
 
         # input & send
         StubResolver.print(f"\n-------------------------\nQuery: {input_query}")
+        timestamp_req: datetime.datetime = datetime.datetime.now()
+        time.sleep(0.100)
         self.client.sendto(str.encode(input_query), (CONST.IP_REC_RESOLVER, CONST.PORT))
 
         # receive
         msg_response, _ = self.client.recvfrom(CONST.BUFFER)
         msg_response: str = msg_response.decode("utf-8")
         dns_response: DnsFormat = DnsFormat().fromJson(json.loads(msg_response))
-
-        # print
-        StubResolver.print(
-            f"\nResponse: \n{dns_response.response}"
+        timestamp_resp: datetime.datetime = datetime.datetime.now()
+        query_time_delta: int = math.ceil(
+            (timestamp_resp - timestamp_req).total_seconds() * 1000
         )
+
+        # TODO check for error
+        StubResolver.print(
+            f"\nResponse: \n{dns_response.response}\n"
+            f"Query Time: {query_time_delta} msec"
+        )
+
 
 
 # start stub resolver (client)
 stub_resolver = StubResolver()
 
 test_queries: List[str] = [
-    "root A",
-    "root NS",
+    #"root A",
+    #"root NS",
     "switch.telematik NS",
-    "easy.homework.fuberlin A",
-    "youtube.com NS",
+    "switch.telematik NS",
+    #"easy.homework.fuberlin A",
+    # "youtube.com NS",
 ]
 
 for query in test_queries:
