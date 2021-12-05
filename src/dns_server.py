@@ -273,11 +273,10 @@ class DnsServer:
             time.sleep(0.100)
             self.nameserver.sendto(msg_res, addr_rec_resolver)
 
-    # TODO make the logging periodical,local counters
-
-    # load nameservers
 
 
+
+# load nameservers
 servers = CONST.MAP_IP_SERVERS[ServerTypes.DNS.name]
 
 # start nameservers (servers)
