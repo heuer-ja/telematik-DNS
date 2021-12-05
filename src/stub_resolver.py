@@ -46,7 +46,7 @@ class StubResolver:
             (timestamp_resp - timestamp_req).total_seconds() * 1000
         )
 
-        # TODO check for error
+        # TODO make prints pretty based on NS and A 
         StubResolver.print(
             f"\nResponse: \n{dns_response.response}\n"
             f"Query Time: {query_time_delta} msec"
