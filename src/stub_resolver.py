@@ -53,16 +53,16 @@ class StubResolver:
         )
 
 
-
 # start stub resolver (client)
 stub_resolver = StubResolver()
 
 test_queries: List[str] = [
+    "www.switch.telematik A",
     #"root A",
-    #"root NS",
-    "switch.telematik NS",
-    "switch.telematik NS",
-    #"easy.homework.fuberlin A",
+    # "root NS",
+    #"switch.telematik NS",
+    #"switch.telematik NS",
+    # "easy.homework.fuberlin A",
     # "youtube.com NS",
 ]
 

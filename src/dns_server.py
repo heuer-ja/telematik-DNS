@@ -102,7 +102,7 @@ class DnsServer:
             ]
             log_df = pd.DataFrame([row], columns=CONST.LOG_COLUMNS)
             log_df.to_csv(self.log_file, index=False)
-        threading.Timer(30, self.__log_procedure).start()
+        threading.Timer(120, self.__log_procedure).start()
 
     def __log_procedure(self):
         with open(self.log_file, "r") as f:
@@ -134,7 +134,7 @@ class DnsServer:
             ]
             # save
             log_df.to_csv(self.log_file, index=False)
-        threading.Timer(30, self.__log_procedure).start()
+        threading.Timer(120, self.__log_procedure).start()
 
     def load_zone_file(self) -> pd.DataFrame:
         df_raw: pd.DataFrame = pd.read_csv(

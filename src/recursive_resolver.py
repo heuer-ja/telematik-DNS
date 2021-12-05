@@ -66,7 +66,7 @@ class RecursiveResolver:
             ]
             log_df = pd.DataFrame([row], columns=CONST.LOG_COLUMNS)
             log_df.to_csv(self.log_file, index=False)
-        threading.Timer(5, self.__log_procedure).start()
+        threading.Timer(120, self.__log_procedure).start()
 
     def __log_procedure(self):
         with open(self.log_file, "r") as f:
@@ -98,7 +98,7 @@ class RecursiveResolver:
             ]
             # save
             log_df.to_csv(self.log_file, index=False)
-        threading.Timer(30, self.__log_procedure).start()
+        threading.Timer(120, self.__log_procedure).start()
 
     def listen(self) -> None:
         """listens for stub resolver request and sends response back"""
@@ -114,17 +114,17 @@ class RecursiveResolver:
             )
             self.requests_received += 1
 
-
             # tramsform request into format
             msg_parts = msg.split()
             ns_of_interest: str = msg_parts[0]
-            record: int = (
-                QryType.A.value
-                if msg_parts[1] == "A"
-                else QryType.NS.value
-                if msg_parts[1] == "NS"
-                else QryType.INVALID.value
-            )
+            #record: int = (
+            #    QryType.A.value
+            #    if msg_parts[1] == "A"
+            #    else QryType.NS.value
+            #    if msg_parts[1] == "NS"
+            #    else QryType.INVALID.value
+            #)
+            record = QryType.A.value
 
             req: DnsFormat = DnsFormat(
                 request=DnsRequestFormat(name=ns_of_interest, dns_qry_type=record)
@@ -173,7 +173,6 @@ class RecursiveResolver:
         # [recursion anchor]
         # success
         if dns_request.response.dns_flags_authoritative:
-            # here do not return the request
             return dns_request
 
         # error
