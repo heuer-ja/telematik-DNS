@@ -8,7 +8,7 @@ import datetime
 import math
 
 from constants import ColorsPr, Constants, ServerTypes
-from dns_format import DnsFormat, RCodes
+from dns_format import DnsFormat, QryType, RCodes
 
 CONST = Constants()
 
@@ -46,37 +46,55 @@ class StubResolver:
             (timestamp_resp - timestamp_req).total_seconds() * 1000
         )
 
-        # TODO make prints pretty based on NS and A 
+        # TODO make prints pretty based on NS and A
+
         StubResolver.print(
-            f"\nResponse: \n{dns_response.response}\n"
-            f"Query Time: {query_time_delta} msec"
+            f"Query: {dns_response.request.name} {str(QryType(dns_response.request.dns_qry_type)).split('.')[1]}"
         )
+        if dns_response.response.dns_flags_rcode != RCodes.NOERROR.value:
+            StubResolver.print(f"Could not be resolved")
+
+        elif dns_response.request.dns_qry_type == QryType.NS.value:
+            StubResolver.print(
+                f"Nameserver of {dns_response.request.name} is {dns_response.response.dns_ns}"
+            )
+
+        elif dns_response.request.dns_qry_type == QryType.A.value:
+            StubResolver.print(
+                f"IP of {dns_response.request.name} is {dns_response.response.dns_a}"
+            )
+
+        else:
+            StubResolver.print(f"Invalid record type.")
+
+        StubResolver.print(f"\nFull Response: {dns_response.response}")
+        StubResolver.print(f"\nQuery Time: {query_time_delta} msec")
 
 
 # start stub resolver (client)
 stub_resolver = StubResolver()
 
 test_queries: List[str] = [
-    "root",
-    #"root A",
-    #"root NS",
-    #"ns.root A",
-    #"ns.root NS",
-#
-    #"telematik A",
-    #"fuberlin NS",
-    #"ns.fuberlin NS",
-    #"ns.fuberlin A",
-#
-    #"switch.telematik NS",
-    #"router.telematik A",
-    #"ns.switch.telematik NS",
-    #"ns.router.telematik A",
+    # "root",
+    # "root A",
+    # "root NS",
+    # "ns.root A",
+    # "ns.root NS",
     #
-    #"easy.homework.fuberlin A",
-    #"easy.homework.fuberlin NS",
-
-    #"youtube.com NS",
+    # "telematik A",
+    # "fuberlin NS",
+    # "ns.fuberlin NS",
+    # "ns.fuberlin A",
+    #
+    # "switch.telematik NS",
+    # "router.telematik A",
+    # "ns.switch.telematik NS",
+    # "ns.router.telematik A",
+    # "ns.router.telematik A",
+    #
+    # "easy.homework.fuberlin A",
+    # "easy.homework.fuberlin NS",
+    "youtube.com NS",
 ]
 
 for query in test_queries:

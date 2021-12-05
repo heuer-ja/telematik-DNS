@@ -190,7 +190,7 @@ class DnsServer:
                         dns_a=row["value"],
                         dns_count_answers=1,
                         dns_flags_authoritative=True,
-                        dns_resp_ttl=row["ttl"],
+                        dns_resp_ttl=int(row["ttl"]),
                     )
 
                 # record does not exists, but is A record
@@ -203,7 +203,7 @@ class DnsServer:
                         dns_a=row["value"],
                         dns_count_answers=1,
                         dns_flags_authoritative=True,
-                        dns_resp_ttl=row["ttl"],
+                        dns_resp_ttl=int(row["ttl"]),
                     )
 
                 # record does not exist and is NS record
@@ -235,7 +235,7 @@ class DnsServer:
                             dns_ns=row["name"],
                             dns_a=row["value"],
                             dns_count_answers=1,
-                            dns_resp_ttl=row["ttl"],
+                            dns_resp_ttl=int(row["ttl"]),
                         )
                     else:
                         return DnsResponseFormat(
@@ -253,6 +253,7 @@ class DnsServer:
                     row["name"] != dns_format.request.name
                     and row["record_type"] == QryType.NS.value
                 ):
+                    # TODO ...
                     return DnsResponseFormat(
                         dns_flags_response=False,
                         dns_flags_rcode=RCodes.NOTAUTH.value,
@@ -260,7 +261,7 @@ class DnsServer:
                         dns_ns=row["name"],
                         dns_a=row["value"],
                         dns_count_answers=1,
-                        dns_resp_ttl=row["ttl"],
+                        dns_resp_ttl=int(row["ttl"]),
                     )
                 # is real suffix and a
                 else:
@@ -271,7 +272,7 @@ class DnsServer:
                         dns_ns=row["name"],
                         dns_a=row["value"],
                         dns_count_answers=1,
-                        dns_resp_ttl=row["ttl"],
+                        dns_resp_ttl=int(row["ttl"]),
                     )
 
         # [case 2] - does not exist
