@@ -253,7 +253,6 @@ class DnsServer:
                     row["name"] != dns_format.request.name
                     and row["record_type"] == QryType.NS.value
                 ):
-                    # TODO ...
                     return DnsResponseFormat(
                         dns_flags_response=False,
                         dns_flags_rcode=RCodes.NOTAUTH.value,
