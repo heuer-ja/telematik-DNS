@@ -155,7 +155,7 @@ Two http servers were implemented in order to solve the second part of the proje
   
   where www.google.com is just an example url. Addititonal cases like google.com are not considered, due to the overcomplication of the task.
   If 
-  > http://127.0.0.90:8090?url=http.switch.telematik
+  > http://127.0.0.90:8090?url=www.switch.telematik
   
   is requested, then the response from the HTTP server from the previous point shall be returned. Otherwise the response shall be returned by another server, whose IP is resolved by the system and not by our own DNS server.
 

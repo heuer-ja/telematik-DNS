@@ -36,13 +36,13 @@ class Constants:
 
         self.MAP_IP_SERVERS: Dict = {
             "DNS": {
-                "127.0.0.11": "root",
-                "127.0.0.12": "telematik",
-                "127.0.0.13": "switch.telematik",
-                "127.0.0.14": "router.telematik",
-                "127.0.0.15": "fuberlin",
-                "127.0.0.16": "homework.fuberlin",
-                "127.0.0.17": "pcpools.fuberlin",
+                "127.0.0.11": "ns.root",
+                "127.0.0.12": "ns.telematik",
+                "127.0.0.13": "ns.switch.telematik",
+                "127.0.0.14": "ns.router.telematik",
+                "127.0.0.15": "ns.fuberlin",
+                "127.0.0.16": "ns.homework.fuberlin",
+                "127.0.0.17": "ns.pcpools.fuberlin",
             }
         }
         self.LOG_COLUMNS = [

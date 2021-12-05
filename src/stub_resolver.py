@@ -57,13 +57,26 @@ class StubResolver:
 stub_resolver = StubResolver()
 
 test_queries: List[str] = [
-    "www.switch.telematik A",
+    "root",
     #"root A",
-    # "root NS",
+    #"root NS",
+    #"ns.root A",
+    #"ns.root NS",
+#
+    #"telematik A",
+    #"fuberlin NS",
+    #"ns.fuberlin NS",
+    #"ns.fuberlin A",
+#
     #"switch.telematik NS",
-    #"switch.telematik NS",
-    # "easy.homework.fuberlin A",
-    # "youtube.com NS",
+    #"router.telematik A",
+    #"ns.switch.telematik NS",
+    #"ns.router.telematik A",
+    #
+    #"easy.homework.fuberlin A",
+    #"easy.homework.fuberlin NS",
+
+    #"youtube.com NS",
 ]
 
 for query in test_queries:

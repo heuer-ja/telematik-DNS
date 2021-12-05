@@ -1,5 +1,5 @@
-homework.fuberlin;300 IN A 127.0.0.16
-homework.fuberlin;300 IN NS homework.fuberlin
+homework.fuberlin 300 IN NS ns.homework.fuberlin
+ns.homework.fuberlin 300 IN A 127.0.0.16
 
-pcpools.fuberlin;300 IN A 127.0.0.17
-pcpools.fuberlin;300 IN NS pcpools.fuberlin
+pcpools.fuberlin 300 IN NS ns.pcpools.fuberlin
+ns.pcpools.fuberlin 300 IN A 127.0.0.17

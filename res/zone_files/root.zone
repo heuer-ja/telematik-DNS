@@ -1,5 +1,4 @@
-telematik;300 IN A 127.0.0.12
-telematik;300 IN NS telematik
-
-fuberlin;300 IN A 127.0.0.15
-fuberlin;300 IN NS fuberlin
+telematik 300 IN NS ns.telematik
+ns.telematik 300 IN A 127.0.0.12
+fuberlin 300 IN NS ns.fuberlin
+ns.fuberlin 300 IN A 127.0.0.15

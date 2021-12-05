@@ -117,14 +117,18 @@ class RecursiveResolver:
             # tramsform request into format
             msg_parts = msg.split()
             ns_of_interest: str = msg_parts[0]
-            #record: int = (
-            #    QryType.A.value
-            #    if msg_parts[1] == "A"
-            #    else QryType.NS.value
-            #    if msg_parts[1] == "NS"
-            #    else QryType.INVALID.value
-            #)
-            record = QryType.A.value
+
+            record: int = 0
+            if len(msg_parts) < 2:
+                record = QryType.A.value
+            else:
+                record = (
+                    QryType.A.value
+                    if msg_parts[1] == "A"
+                    else QryType.NS.value
+                    if msg_parts[1] == "NS"
+                    else QryType.INVALID.value
+                )
 
             req: DnsFormat = DnsFormat(
                 request=DnsRequestFormat(name=ns_of_interest, dns_qry_type=record)

@@ -1,4 +1,3 @@
-from datetime import datetime
 import socket
 import pandas as pd
 import json
@@ -26,7 +25,7 @@ class DnsServerStarter:
                 name=name,
                 ip=ip,
                 port=CONST.PORT,
-                zone_file=f"./res/zone_files/{name}.zone",
+                zone_file=f"./res/zone_files/{name[3:]}.zone",
                 log_file=f"./res/logs/{ip}.log",
             )
             for ip, name in dns_servers.items()
@@ -137,43 +136,24 @@ class DnsServer:
         threading.Timer(120, self.__log_procedure).start()
 
     def load_zone_file(self) -> pd.DataFrame:
-        df_raw: pd.DataFrame = pd.read_csv(
+        df: pd.DataFrame = pd.read_csv(
             self.zone_file,
-            sep=";",
+            sep=" ",
             header=None,  # no column names in .zone-files
-            names=["name", "record"],
+            names=["name", "ttl", "protocol", "record_type", "value"],
         )
 
-        # detailed dataframe
-        df: pd.DataFrame = pd.DataFrame(
-            columns=["name", "ttl", "protocol", "type", "ip"], data=[]
+        df["record_type"] = df["record_type"].apply(
+            lambda x: QryType.A.value if x == "A" else QryType.NS.value
         )
-        for _, row in df_raw.iterrows():
-            record_split: List[str] = row["record"].split()
-            df = df.append(
-                {
-                    "name": row["name"],
-                    "ttl": record_split[0],
-                    "protocol": record_split[1],
-                    "ip": record_split[3],
-                    "type": QryType.NS.value
-                    if record_split[2] == "NS"
-                    else QryType.A.value
-                    if record_split[2] == "A"
-                    else QryType.INVALID.value,
-                },
-                ignore_index=True,
-            )
-
         return df
 
     ####################[checkpoint b]#############################
 
-    def resolve_qry(self, dns_format: DnsFormat) -> DnsResponseFormat:
-        """searches in zone file for requested ns and its record"""
 
-        # [case 0] - root
-        if "root" == dns_format.request.name:
+    def resolve_qry(self, dns_format: DnsFormat) -> DnsResponseFormat:
+        # [case 0] - is root
+        if dns_format.request.name in ["root"]:
             return DnsResponseFormat(
                 dns_flags_response=True,
                 dns_flags_rcode=RCodes.NOERROR.value
@@ -182,58 +162,128 @@ class DnsServer:
                 dns_flags_authoritative=True,
                 dns_ns=self.name,
                 dns_a=CONST.get_ip(server_name=self.name),
+                dns_count_answers=1,
                 # TODO ttl
-                dns_count_answers=dns_format.response.dns_count_answers + 1,
                 dns_resp_ttl=0,
             )
 
-        # [case 1] - look at childs
+        # [case 1] - child or suffix
         df_zonefile: pd.DataFrame = self.load_zone_file()
+
         for _, row in df_zonefile.iterrows():
+
             # [case 1a] - a child (in zone file) has sought name & record
-            if (
-                dns_format.request.name == row["name"]
-                and dns_format.request.dns_qry_type == row["type"]
-            ):
-                return DnsResponseFormat(
-                    dns_flags_response=True,
-                    dns_flags_rcode=RCodes.NOERROR.value,
-                    dns_flags_authoritative=True,
-                    dns_ns=row["name"],
-                    dns_a=row["ip"],
-                    # TODO ttl
-                    dns_count_answers=dns_format.response.dns_count_answers + 1,
-                    dns_resp_ttl=0,
-                )
+            if dns_format.request.name == row["name"]:
+                # record exists
+                if dns_format.request.dns_qry_type == row["record_type"]:
 
-            # [case 1b] - a child (in zone file) has sought name & but not record
-            elif dns_format.request.name == row["name"]:
-                return DnsResponseFormat(
-                    dns_flags_response=True,
-                    dns_flags_rcode=RCodes.SERVFAIL.value,
-                    dns_flags_authoritative=True,
-                    dns_ns=row["name"],
-                    dns_a=row["ip"],
-                    # TODO ttl
-                    dns_count_answers=dns_format.response.dns_count_answers + 1,
-                    dns_resp_ttl=0,
-                )
+                    # NS-Record
+                    if dns_format.request.dns_qry_type == QryType.NS.value:
+                        ns = row["value"]
+                        row = df_zonefile[df_zonefile["name"] == ns].iloc[0]
 
-            # [case 1c] - a child (in zone file) has suffix of sought name
-            # start suffix search in zone_file
+                    # A-Record
+                    return DnsResponseFormat(
+                        dns_flags_response=True,
+                        dns_flags_rcode=RCodes.NOERROR.value,
+                        dns_ns=row["name"],
+                        dns_a=row["value"],
+                        # TODO ttl
+                        dns_count_answers=1,
+                        dns_flags_authoritative=True,
+                        dns_resp_ttl=0,
+                    )
+
+                # record does not exists, but is A record
+                elif dns_format.request.dns_qry_type == QryType.A.value:
+                    row = df_zonefile[df_zonefile["name"] == row["value"]].iloc[0]
+                    return DnsResponseFormat(
+                        dns_flags_response=True,
+                        dns_flags_rcode=RCodes.NOERROR.value,
+                        dns_ns=row["name"],
+                        dns_a=row["value"],
+                        # TODO ttl
+                        dns_count_answers=1,
+                        dns_flags_authoritative=True,
+                        dns_resp_ttl=0,
+                    )
+
+                # record does not exist and is NS record
+                else:
+                    return DnsResponseFormat(
+                        dns_flags_response=True,
+                        dns_flags_rcode=RCodes.SERVFAIL.value,
+                        dns_flags_authoritative=False,
+                        dns_ns=None,
+                        dns_a=None,
+                        # TODO ttl
+                        dns_count_answers=1,
+                        dns_resp_ttl=0,
+                    )
+
+            # [case 1b] - suffix
             elif dns_format.request.name.endswith(row["name"]):
-                return DnsResponseFormat(
-                    dns_flags_response=False,
-                    dns_flags_rcode=RCodes.NOTAUTH.value,
-                    dns_flags_authoritative=False,
-                    dns_ns=row["name"],
-                    dns_a=row["ip"],
-                    # TODO ttl
-                    dns_count_answers=dns_format.response.dns_count_answers + 1,
-                    dns_resp_ttl=0,
-                )
+                ns = row["value"]
+                row = df_zonefile[df_zonefile["name"] == ns].iloc[0]
 
-        # [case 2] no child is or knows the sought domain
+                # suffix is what we are searching
+                if row["name"] == dns_format.request.name:
+
+                    if row["record_type"] == dns_format.request.dns_qry_type:
+
+                        return DnsResponseFormat(
+                            dns_flags_response=True,
+                            dns_flags_rcode=RCodes.NOERROR.value,
+                            dns_flags_authoritative=True,
+                            dns_ns=row["name"],
+                            dns_a=row["value"],
+                            # TODO ttl
+                            dns_count_answers=1,
+                            dns_resp_ttl=0,
+                        )
+                    else:
+                        return DnsResponseFormat(
+                            dns_flags_response=True,
+                            dns_flags_rcode=RCodes.SERVFAIL.value,
+                            dns_flags_authoritative=False,
+                            dns_ns=None,
+                            dns_a=None,
+                            # TODO ttl
+                            dns_count_answers=1,
+                            dns_resp_ttl=0,
+                        )
+
+
+                # is real suffix and ns
+                elif (
+                    row["name"] != dns_format.request.name
+                    and row["record_type"] == QryType.NS.value
+                ):
+                # TODO ...
+                    return DnsResponseFormat(
+                        dns_flags_response=False,
+                        dns_flags_rcode=RCodes.NOTAUTH.value,
+                        dns_flags_authoritative=False,
+                        dns_ns=row["name"],
+                        dns_a=row["value"],
+                        # TODO ttl
+                        dns_count_answers=1,
+                        dns_resp_ttl=0,
+                    )
+                # is real suffix and a
+                else:
+                    return DnsResponseFormat(
+                        dns_flags_response=True,
+                        dns_flags_rcode=RCodes.NOTAUTH.value,
+                        dns_flags_authoritative=False,
+                        dns_ns=row["name"],
+                        dns_a=row["value"],
+                        # TODO ttl
+                        dns_count_answers=1,
+                        dns_resp_ttl=0,
+                    )
+
+        # [case 2] - does not exist
         return DnsResponseFormat(
             dns_flags_response=False,
             dns_flags_rcode=RCodes.NXDOMAIN.value,
@@ -241,7 +291,7 @@ class DnsServer:
             dns_ns=None,
             dns_a=None,
             dns_resp_ttl=None,
-            dns_count_answers=dns_format.response.dns_count_answers + 1,
+            dns_count_answers=0,
         )
 
     def recv(self):
@@ -272,8 +322,6 @@ class DnsServer:
             msg_res: str = str.encode(dns_res.toJsonStr())
             time.sleep(0.100)
             self.nameserver.sendto(msg_res, addr_rec_resolver)
-
-
 
 
 # load nameservers
