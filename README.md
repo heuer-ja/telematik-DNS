@@ -135,6 +135,10 @@ dns_format = {
     - The determined answer is sent back to the `RecursiveResolver` in the form of `DnsFormat`
 
 
+*Note:*
+If query asks for NS record of a auth. nameserver (e.g. `ns.telematik NS`) our program throws ErrorCode.SERVFAIL, 
+because it is already the auth. NS.
+
 ### Logging
 The logging procedure is implemented at the recursive resolver and the dns servers. If log files are not initialised, this is taken care of at server start. Furthermore, there are several accumulator counters at each server, which do keep track of the incoming/outgoing requests/responses and every *n* seconds a new line with the incremented with the accumulator old values from the log is added, in order to keep track of the measures. The procedure runs in the background and does so, until the server is shut down.
 
@@ -175,7 +179,7 @@ Two http servers were implemented in order to solve the second part of the proje
 | ------------- | ----------------------------------- |
 | Milestone (a) | Leo, Leslie, Joel                   |
 | Milestone (b) | Leo, Leslie, Joel                   |
-| Milestone (c) | Luke                                |
+| Milestone (c) | Lukas                               |
 | Milestone (d) | Viktoriya                           |
 | Management    | Leo, Leslie, Joel                   |
 | Documentation | Leo, Leslie, Lukas, Joel, Viktoriya |
