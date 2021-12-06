@@ -7,7 +7,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-type", "text/html")
         self.end_headers()
 
-        message = "Hello !"
+        message = "You reached the server!"
         self.wfile.write(bytes(message, "utf8"))
 
 
