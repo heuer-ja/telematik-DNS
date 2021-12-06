@@ -69,33 +69,64 @@ class StubResolver:
         StubResolver.print(f"\nQuery Time: {query_time_delta} msec")
 
 
-# start stub resolver (client)
-stub_resolver = StubResolver()
 
-test_queries: List[str] = [
-    # "root",
-    # "root A",
-    # "root NS",
-    # "ns.root A",
-    # "ns.root NS",
-    #
-    # "telematik A",
-    # "fuberlin NS",
-    # "ns.fuberlin NS",
-    # "ns.fuberlin A",
-    #
-    # "switch.telematik NS",
-    # "router.telematik A",
-    # "ns.switch.telematik NS",
-    # "ns.router.telematik A",
-    # "ns.router.telematik A",
 
-    "linux.pcpools.fuberlin A",
+def test1() -> None :
+    # start stub resolver (client)
+    stub_resolver = StubResolver()
 
-    # "easy.homework.fuberlin A",
-    # "easy.homework.fuberlin NS",
-    #"youtube.com NS",
-]
+    test_queries: List[str] = [
+        # "root",
+        # "root A",
+        # "root NS",
+        # "ns.root A",
+        # "ns.root NS",
+        #
+        # "telematik A",
+        # "fuberlin NS",
+        # "ns.fuberlin NS",
+        # "ns.fuberlin A",
+        #
+        # "switch.telematik NS",
+        # "router.telematik A",
+        # "ns.switch.telematik NS",
+        # "ns.router.telematik A",
+        # "ns.router.telematik A",
 
-for query in test_queries:
-    stub_resolver.resolve_name(input_query=query)
+        "linux.pcpools.fuberlin A",
+
+        # "easy.homework.fuberlin A",
+        # "easy.homework.fuberlin NS",
+        #"youtube.com NS",
+    ]
+
+    for query in test_queries:
+        stub_resolver.resolve_name(input_query=query)
+
+def test2() -> None:
+    # start stub resolver (client)
+    stub_resolver = StubResolver()
+
+    test_queries: List[str] = [
+        "linux.pcpools.fuberlin A",
+        "linux.pcpools.fuberlin A",
+    ]
+
+    for query in test_queries:
+        stub_resolver.resolve_name(input_query=query)
+
+def test3() -> None:
+    # start stub resolver (client)
+    stub_resolver = StubResolver()
+
+    import webbrowser
+
+    # ... construct your list of search terms ...
+    url = f"http://127.0.0.90:8090/?url=www.switch.telematik"
+    webbrowser.open_new_tab(url)
+
+    url = f"http://127.0.0.90:8090/?url=wikipedia.com"
+    webbrowser.open_new_tab(url)
+
+
+test3()
