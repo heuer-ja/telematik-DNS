@@ -1,9 +1,8 @@
 # 1. Execution
-Start programs from root directory
 
-## Prerequirements
-One must install `pandas`, as it is required for our project.
-This could be done, depending on the package manager with: 
+## 1.1 Prerequirements
+- One must install `pandas`, as it is required for our project.
+- This could be done, depending on the package manager with: 
 
 | pip                   | conda                  |
 | --------------------- | ---------------------- |
@@ -11,13 +10,25 @@ This could be done, depending on the package manager with:
 
 
 
-## Commands
-1. `python3 src/dns_server.py` - run all nameservers
-2. `python3 src/recursive_resolver.py` - run recursive resolver
-3. `python3 src/stub_resolver.py` - run stub resolver
-    - input sth. like "linux.pcpools.fuberlin NS"
-4. `python3 src/http_proxy.py` - run HTTP proxy
-5. `python3 src/http_server.py` - run HTTP server  
+## 1.2 Commands
+Start programs from root directory
+
+### Run script
+- You can start the entire *DNS* with a *run script* called `run.sh`:
+- Run `chmod u+x run.sh && ./run.sh`
+- or
+    1. `chmod u+x run.sh`
+    2. `./run.sh`
+
+### Separate files
+- Alternatively, you can run all files on its own.
+- Therefore, start all files on a separate terminal.
+    1. `python3 src/dns_server.py` - run all nameservers
+    2. `python3 src/recursive_resolver.py` - run recursive resolver
+    3. `python3 src/stub_resolver.py` - run stub resolver
+        - input sth. like "linux.pcpools.fuberlin NS"
+    4. `python3 src/http_proxy.py` - run HTTP proxy
+    5. `python3 src/http_server.py` - run HTTP server  
 
 
 ### Error handling

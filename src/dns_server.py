@@ -4,7 +4,6 @@ import json
 import threading
 import os
 import time
-import csv
 from threading import Thread
 from typing import Dict, List
 from constants import Constants, ServerTypes, ColorsPr
