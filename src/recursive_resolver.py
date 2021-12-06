@@ -142,10 +142,39 @@ class RecursiveResolver:
                 (ns_of_interest, cache_record_type)
             )
             if cache_entry is None:
+                print("Kein passender Cache Entry im ersten Schritt gefunden")
+                ns_of_interest_suffix: str = ns_of_interest
+
+                while len(ns_of_interest_suffix) > 0:
+                    # on first iteration
+                    if ns_of_interest_suffix == ns_of_interest:
+                        cache_entry = self.cache.get(
+                            (ns_of_interest_suffix, QryType.NS.value)
+                        )
+                        if cache_entry is not None:
+                            break
+
+                    index_sep: int = ns_of_interest_suffix.find(".")
+                    # no more dots in name
+                    if index_sep == -1:
+                        break
+                    else:
+                        ns_of_interest_suffix = ns_of_interest_suffix[index_sep + 1:len(ns_of_interest_suffix)]
+                        print(f"ns_of_interest_suffix = {ns_of_interest_suffix}")
+                        cache_entry = self.cache.get(
+                            (ns_of_interest_suffix, QryType.NS.value)
+                        )
+                        if cache_entry is not None:
+                            break
+                if cache_entry is not None:
+                    req.response.dns_ns = ns_of_interest_suffix
+                    req.response.dns_a = cache_entry.value
+
                 # recursion - search for nameserver
                 RecursiveResolver.print(
                     f"recursively searching for {ns_of_interest} {record}-record"
                 )
+                print(f"req = {req.toJsonStr()}")
                 dns_response: DnsFormat = self.recursion(dns_request=req)
             else:
                 ttl: int = math.ceil(
@@ -210,14 +239,24 @@ class RecursiveResolver:
                 datetime.datetime.now() + datetime.timedelta(0, float(ttl))
             )
 
+            # just put the value into the cache
             if dns_response.response.dns_flags_rcode == RCodes.NOERROR.value:
                 self.cache[
                     dns_response.request.name, dns_response.request.dns_qry_type
                 ] = CacheEntry(dns_response.response.dns_a, timestamp_remove)
+
+            # Don't put the name of the NS into the cache but instead the domain it is responsible for, by using only
+            # the overlapping suffix of the name and NS (ns.telematik --> telematik). This would not work if the name
+            # of the NS does not have a suffix with the domain it is authoritative for!
             elif dns_response.response.dns_flags_rcode == RCodes.NOTAUTH.value:
-                self.cache[dns_response.response.dns_ns, QryType.NS.value] = CacheEntry(
-                    dns_response.response.dns_a, timestamp_remove
-                )
+                dns_ns_suffix: str = dns_response.response.dns_ns[3:len(dns_response.response.dns_ns)] \
+                    if dns_response.response.dns_ns.startswith("ns.") \
+                    else dns_response.response.dns_ns
+                print(f"dns_ns_suffix endgültig = {dns_ns_suffix}")
+
+                self.cache[
+                    dns_ns_suffix, QryType.NS.value
+                ] = CacheEntry(dns_response.response.dns_a, timestamp_remove)
 
         RecursiveResolver.print(f"REC. RES. received: \n {dns_response.toJsonStr()}\n")
 

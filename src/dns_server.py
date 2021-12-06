@@ -151,7 +151,7 @@ class DnsServer:
 
     def resolve_qry(self, dns_format: DnsFormat) -> DnsResponseFormat:
         # [case 0] - is root
-        if dns_format.request.name in ["root"]:
+        if dns_format.request.name in ["root", "ns.root"]:
             return DnsResponseFormat(
                 dns_flags_response=True,
                 dns_flags_rcode=RCodes.NOERROR.value
@@ -221,7 +221,6 @@ class DnsServer:
 
             # [case 1b] - suffix
             elif dns_format.request.name.endswith(row["name"]):
-                print(row["name"])
                 ns = row["value"]
                 try:
                     row = df_zonefile[df_zonefile["name"] == ns].iloc[0]

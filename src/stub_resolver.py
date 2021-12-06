@@ -7,7 +7,7 @@ import time
 import datetime
 import math
 
-from constants import ColorsPr, Constants, ServerTypes
+from constants import ColorsPr, Constants
 from dns_format import DnsFormat, QryType, RCodes
 
 CONST = Constants()
@@ -59,7 +59,7 @@ class StubResolver:
 
         elif dns_response.request.dns_qry_type == QryType.A.value:
             StubResolver.print(
-                f"IP of {dns_response.request.name} is {dns_response.response.dns_a}"
+                f"IP Address of {dns_response.request.name} is {dns_response.response.dns_a}"
             )
 
         else:
