@@ -13,14 +13,14 @@
 ## 1.2 Commands
 Start programs from root directory
 
-### Run script
+### Variant 1: Run script
 - You can start the entire *DNS* with a *run script* called `run.sh`:
-- Run `chmod u+x run.sh && ./run.sh`
-- or
+- Run with combined command (Linux): `chmod u+x run.sh && ./run.sh`
+- or separate:
     1. `chmod u+x run.sh`
     2. `./run.sh`
 
-### Separate files
+### Variant 2: Separate files
 - Alternatively, you can run all files on its own.
 - Therefore, start all files on a separate terminal.
     1. `python3 src/dns_server.py` - run all nameservers
