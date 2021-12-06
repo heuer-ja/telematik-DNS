@@ -91,6 +91,7 @@ test_queries: List[str] = [
 
     # "linux.pcpools.fuberlin A",
 
+    # "www.switch.telematik A",
     # "easy.homework.fuberlin A",
     # "easy.homework.fuberlin NS",
     # "youtube.com NS",
