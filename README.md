@@ -13,20 +13,20 @@
 ## 1.2 Commands
 Start programs from root directory
 
-### Run script
+### Variant 1: Run script
 - You can start the entire *DNS* with a *run script* called `run.sh`:
-- Run `chmod u+x run.sh && ./run.sh`
-- or
+- Run with combined command (Linux): `chmod u+x run.sh && ./run.sh`
+- or separate:
     1. `chmod u+x run.sh`
     2. `./run.sh`
 
-### Separate files
+### Variant 2: Separate files
 - Alternatively, you can run all files on its own.
 - Therefore, start all files on a separate terminal.
     1. `python3 src/dns_server.py` - run all nameservers
     2. `python3 src/recursive_resolver.py` - run recursive resolver
     3. `python3 src/stub_resolver.py` - run stub resolver
-        - input sth. like "linux.pcpools.fuberlin NS"
+        - input sth. like "linux.pcpools.fuberlin A"
     4. `python3 src/http_proxy.py` - run HTTP proxy
     5. `python3 src/http_server.py` - run HTTP server  
 
