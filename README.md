@@ -1,6 +1,12 @@
 # 1. Execution
 
 ## 1.1 Prerequirements
+
+### Operating System 
+- Linux is required for using the specified `commands` in this file. 
+
+
+### Python Libraries/Packages
 - One must install `pandas`, as it is required for our project.
 - This could be done, depending on the package manager with: 
 
@@ -9,6 +15,9 @@
 | `pip install pandas`  | `conda install pandas` |
 
 
+### Directories
+- directory `res/logs` has to exist, otherwise logging throws an error 
+    - when properly cloning this repository, it already exists
 
 ## 1.2 Commands
 Start programs from root directory
@@ -82,6 +91,8 @@ Tree structure:
 - The attribute `DnsServer.zone_file` gives a nameserver access to its own *zone file*. 
 - The totality of all *zone files* then finally results in the tree structure shown above. 
 For example, the *zone file* `telematik.zone` for the name server *telematik* looks like this:
+
+TODO zone files Aufbau erklären
 ```
 switch.telematik;300 IN NS 127.0.0.13
 router.telematik;300 IN NS 127.0.0.14
@@ -169,9 +180,6 @@ The logging procedure is implemented at the recursive resolver and the dns serve
 `TODO Lukas`
 
 ## 2.4. HTTP Proxy / HTTP Server
-HTTP Proxy
-Your DNS implementation is used by an application (see HTTP proxy below).
-
 Two http servers were implemented in order to solve the second part of the project description. 
 
 - The HTTP server is implemented in the <code>http_server.py</code> file and runs on 127.0.0.80 and port 8080. We did add the server to the zone file of the switch.telematik authorative dns server, in order to be able to obtain it afterwards in the http proxy. The server does return a simple web-page, which says "You reached the server!". The domain name we chose corresponds to **http.switch.telematik**
@@ -187,8 +195,15 @@ Two http servers were implemented in order to solve the second part of the proje
   is requested, then the response from the HTTP server from the previous point shall be returned. Otherwise the response shall be returned by another server, whose IP is resolved by the system and not by our own DNS server.
 
 
+## 3. Limitations
+Our implementation of a DNS provides only the basic functionalities. Limitations of our implementation are among other things:
+    - For the zone *root*, some things are hardcoded since no *zone file* exists that specifies a nameserver or IP address for it.
+    - All our *zone files* only cover *A* and *NS records*.
+    - For one *zone* exists exactly one nameserver  
+    - HTTP proxy cannot find a favicon and therefore gives warnings when entering URLs
 
-## 3. Team & Participation
+
+## 4. Team & Participation
 
 **Legende**
 - Leo (Leo Lojewski)
@@ -207,25 +222,4 @@ Two http servers were implemented in order to solve the second part of the proje
 | Management    | Leo, Leslie, Joel                   |
 | Documentation | Leo, Leslie, Lukas, Joel, Viktoriya |
 
-
-
-
-### (a) A-record
-Your stub resolver is able to (directly) request an A record from the authorative server.
-
-    - random data tranfer (udp) between client and author. NS
-
-
-### (b) Recusive Resolver
-Your recursive resolver is able to discover the authoritative server of a name, and resolve the A record for this name.
-
-### (c) Cache
-Your stub resolver is able to resolve any name in the list via the recursive resolver and profits from faster replies in the case of cache hits at the recursive resolver.
-
-    TIPPS:
-    - since we are using localhost (127.0.0.x), there is just little delay
-        --> use sleep()-method for sending methods
-
-
-----------------------------------------------------------------------
 
