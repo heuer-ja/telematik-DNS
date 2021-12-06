@@ -1,12 +1,17 @@
 # 1. Execution
 
 ## 1.1 Prerequirements
+- Linux is required for using the specified `commands` in this file. 
+
 - One must install `pandas`, as it is required for our project.
 - This could be done, depending on the package manager with: 
 
 | pip                   | conda                  |
 | --------------------- | ---------------------- |
 | `pip install pandas`  | `conda install pandas` |
+
+- directory `res/logs` has to exist, otherwise logging throws an error 
+    - when properly cloning this repository, it already exists
 
 
 
