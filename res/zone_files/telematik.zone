@@ -2,3 +2,5 @@ switch.telematik 300 IN NS ns.switch.telematik
 ns.switch.telematik 300 IN A 127.0.0.13
 router.telematik 300 IN NS ns.router.telematik
 ns.router.telematik 300 IN A 127.0.0.14
+
+telematik 300 IN A 127.0.0.32

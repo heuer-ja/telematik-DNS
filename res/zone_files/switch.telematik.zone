@@ -1,3 +1,5 @@
 www.switch.telematik 300 IN A 127.0.0.80
 mail.switch.telematik 300 IN A 127.0.0.22
 
+switch.telematik 300 IN A 127.0.0.33
+
