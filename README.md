@@ -31,15 +31,27 @@ Start programs from root directory
     5. `python3 src/http_server.py` - run HTTP server  
 
 
-### Error handling
-- If, for whatever reason, the used addresses are blocked after running the scripts, the following command will help under *Ubuntu*:
-
-
-
-`pkill -9 -f src/dns_server.py && pkill -9 -f src/recursive_resolver.py && pkill -9 -f src/stub_resolver.py`
-
+## Error handling
+- If, for whatever reason, the used addresses are blocked after running the scripts, the following command will help under *Linux*:
+    1. Combined `pkill -9 -f "^python3 src/.*"`
+    2. Separate: 
+        1. pkill -9 -f src/dns_server.py
+        2. pkill -9 -f src/recursive_resolver.py
+        3. pkill -9 -f src/stub_resolver.py
+        4. pkill -9 -f src/http_proxy.py
+        5. pkill -9 -f src/http_server.py
     
-## 2. Documentation
+## 1.3 Prints & Colors 
+- During execution, the run is printed. 
+- If you use a console/terminal that supports colors, colors will be displayed.
+
+| Class | Color | Prints |
+| ------ | ------| -------- |
+| `StubResolver`  | green | (1) input query (2) final response from `RecurisveResolver` |
+| `RecursiveResolver`  | yellow | (1) input Query from `StubResolver` (2) responses from different `DnsServer` |
+| `DnsServer`  | purple | (1) redirected query from `RecurisveResolver` (2) calculated response (name resolution) |
+
+# 2. Documentation
 
 ## 2.1 General
 ### Local DNS
