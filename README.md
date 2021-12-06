@@ -2,13 +2,13 @@
 Start programs from root directory
 
 ## Prerequirements
-One must install <code>pandas</code>, as it is required for our project.
+One must install `pandas`, as it is required for our project.
 This could be done, depending on the package manager with: 
->conda install pandas
 
-or 
+| pip                   | conda                  |
+| --------------------- | ---------------------- |
+| `pip install pandas`  | `conda install pandas` |
 
->pip3 install pandas
 
 
 ## Commands

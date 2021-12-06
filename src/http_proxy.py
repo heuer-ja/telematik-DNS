@@ -4,7 +4,6 @@ import urllib.request
 from constants import Constants
 from dns_format import DnsFormat, RCodes
 import socket
-import requests
 import json
 
 
