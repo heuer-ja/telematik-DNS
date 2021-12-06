@@ -26,7 +26,7 @@ Start programs from root directory
     1. `python3 src/dns_server.py` - run all nameservers
     2. `python3 src/recursive_resolver.py` - run recursive resolver
     3. `python3 src/stub_resolver.py` - run stub resolver
-        - input sth. like "linux.pcpools.fuberlin NS"
+        - input sth. like "linux.pcpools.fuberlin A"
     4. `python3 src/http_proxy.py` - run HTTP proxy
     5. `python3 src/http_server.py` - run HTTP server  
 
