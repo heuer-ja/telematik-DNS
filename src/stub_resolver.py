@@ -117,8 +117,6 @@ def test2() -> None:
 
 def test3() -> None:
     # start stub resolver (client)
-    stub_resolver = StubResolver()
-
     import webbrowser
 
     # ... construct your list of search terms ...
@@ -128,6 +126,12 @@ def test3() -> None:
     url = f"http://127.0.0.90:8090/?url=wikipedia.com"
     webbrowser.open_new_tab(url)
 
+
+def test4() -> None:
+    if len(sys.argv) >= 3:
+        record_type:str = "NS" if sys.argv[3] == "NS" else "A"
+        stub_resolver = StubResolver()
+        stub_resolver.resolve_name(input_query=f"{sys.argv[2]} {record_type}" )
 
 
 import sys
@@ -142,5 +146,8 @@ elif sys.argv[1] == "2":
     test2()
 elif sys.argv[1] == "3":
     test3()
+elif sys.argv[1] == "4":
+    test4()
+
 else:
     pass

@@ -3,6 +3,7 @@ import threading
 
 from typing import Dict, Tuple
 
+timer_val:int = 10
 
 class CacheEntry:
     """
@@ -26,13 +27,13 @@ class Cache(Dict[Tuple[str, int], CacheEntry]):
     """
 
     def __init__(self) -> None:
-        threading.Timer(30, self.__cache_cleanup).start()
+        threading.Timer(timer_val, self.__cache_cleanup).start()
 
     def __cache_cleanup(self):
         for key, cache_entry in self.copy().items():
-            print(
-                f"key: {key} , value: {cache_entry.value} , timestamp_remove: {cache_entry.timestamp_remove}"
-            )
+            #print(
+            #    f"key: {key} , value: {cache_entry.value} , timestamp_remove: {cache_entry.timestamp_remove}"
+            #)
             if cache_entry.timestamp_remove < datetime.datetime.now():
                 self.pop(key)
-        threading.Timer(30, self.__cache_cleanup).start()
+        threading.Timer(timer_val, self.__cache_cleanup).start()
