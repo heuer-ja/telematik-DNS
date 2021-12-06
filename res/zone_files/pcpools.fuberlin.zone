@@ -1,3 +1,5 @@
 linux.pcpools.fuberlin 300 IN A 127.0.0.27
 macos.pcpools.fuberlin 300 IN A 127.0.0.28
 windows.pcpools.fuberlin 300 IN A 127.0.0.29
+
+pcpools.fuberlin 300 IN A 127.0.0.37

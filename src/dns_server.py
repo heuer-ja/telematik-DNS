@@ -169,20 +169,19 @@ class DnsServer:
         # [case 1] - child or suffix
         df_zonefile: pd.DataFrame = self.load_zone_file()
 
+        response: DnsResponseFormat = None
         for _, row in df_zonefile.iterrows():
-
-            # [case 1a] - a child (in zone file) has sought name & record
+            # [case 1a] - a row (in zone file) has sought name
             if dns_format.request.name == row["name"]:
-                # record exists
+                # record type is the requested one
                 if dns_format.request.dns_qry_type == row["record_type"]:
-
                     # NS-Record
                     if dns_format.request.dns_qry_type == QryType.NS.value:
                         ns = row["value"]
                         row = df_zonefile[df_zonefile["name"] == ns].iloc[0]
 
                     # A-Record
-                    return DnsResponseFormat(
+                    response = DnsResponseFormat(
                         dns_flags_response=True,
                         dns_flags_rcode=RCodes.NOERROR.value,
                         dns_ns=row["name"],
@@ -191,23 +190,25 @@ class DnsServer:
                         dns_flags_authoritative=True,
                         dns_resp_ttl=int(row["ttl"]),
                     )
+                    break
 
-                # record does not exists, but is A record
+                # record type is not the requested one and A record was requested
                 elif dns_format.request.dns_qry_type == QryType.A.value:
                     row = df_zonefile[df_zonefile["name"] == row["value"]].iloc[0]
-                    return DnsResponseFormat(
+                    response = DnsResponseFormat(
                         dns_flags_response=True,
-                        dns_flags_rcode=RCodes.NOERROR.value,
+                        dns_flags_rcode=RCodes.NOTAUTH.value,
                         dns_ns=row["name"],
                         dns_a=row["value"],
                         dns_count_answers=1,
-                        dns_flags_authoritative=True,
+                        dns_flags_authoritative=False,
                         dns_resp_ttl=int(row["ttl"]),
                     )
+                    break
 
-                # record does not exist and is NS record
+                # record type is not the requested one and NS record was requested
                 else:
-                    return DnsResponseFormat(
+                    response = DnsResponseFormat(
                         dns_flags_response=True,
                         dns_flags_rcode=RCodes.SERVFAIL.value,
                         dns_flags_authoritative=False,
@@ -216,18 +217,21 @@ class DnsServer:
                         dns_count_answers=1,
                         dns_resp_ttl=None,
                     )
+                    continue
 
             # [case 1b] - suffix
             elif dns_format.request.name.endswith(row["name"]):
+                print(row["name"])
                 ns = row["value"]
-                row = df_zonefile[df_zonefile["name"] == ns].iloc[0]
+                try:
+                    row = df_zonefile[df_zonefile["name"] == ns].iloc[0]
+                except IndexError:
+                    continue
 
                 # suffix is what we are searching
                 if row["name"] == dns_format.request.name:
-
                     if row["record_type"] == dns_format.request.dns_qry_type:
-
-                        return DnsResponseFormat(
+                        response = DnsResponseFormat(
                             dns_flags_response=True,
                             dns_flags_rcode=RCodes.NOERROR.value,
                             dns_flags_authoritative=True,
@@ -236,8 +240,9 @@ class DnsServer:
                             dns_count_answers=1,
                             dns_resp_ttl=int(row["ttl"]),
                         )
+                        break
                     else:
-                        return DnsResponseFormat(
+                        response = DnsResponseFormat(
                             dns_flags_response=True,
                             dns_flags_rcode=RCodes.SERVFAIL.value,
                             dns_flags_authoritative=False,
@@ -246,13 +251,14 @@ class DnsServer:
                             dns_count_answers=1,
                             dns_resp_ttl=None,
                         )
+                        continue
 
-                # is real suffix and ns
+                # is real suffix and NS
                 elif (
                     row["name"] != dns_format.request.name
                     and row["record_type"] == QryType.NS.value
                 ):
-                    return DnsResponseFormat(
+                    response = DnsResponseFormat(
                         dns_flags_response=False,
                         dns_flags_rcode=RCodes.NOTAUTH.value,
                         dns_flags_authoritative=False,
@@ -261,9 +267,10 @@ class DnsServer:
                         dns_count_answers=1,
                         dns_resp_ttl=int(row["ttl"]),
                     )
-                # is real suffix and a
+                    break
+                # is real suffix and A
                 else:
-                    return DnsResponseFormat(
+                    response = DnsResponseFormat(
                         dns_flags_response=True,
                         dns_flags_rcode=RCodes.NOTAUTH.value,
                         dns_flags_authoritative=False,
@@ -272,17 +279,20 @@ class DnsServer:
                         dns_count_answers=1,
                         dns_resp_ttl=int(row["ttl"]),
                     )
+                    break
 
         # [case 2] - does not exist
-        return DnsResponseFormat(
-            dns_flags_response=False,
-            dns_flags_rcode=RCodes.NXDOMAIN.value,
-            dns_flags_authoritative=None,
-            dns_ns=None,
-            dns_a=None,
-            dns_resp_ttl=None,
-            dns_count_answers=0,
-        )
+        if response is None:
+            response = DnsResponseFormat(
+                dns_flags_response=False,
+                dns_flags_rcode=RCodes.NXDOMAIN.value,
+                dns_flags_authoritative=None,
+                dns_ns=None,
+                dns_a=None,
+                dns_resp_ttl=None,
+                dns_count_answers=0,
+            )
+        return response
 
     def recv(self):
         """
