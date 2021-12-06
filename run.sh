@@ -21,27 +21,43 @@ python3 src/http_server.py  &
 python3 src/http_proxy.py  & 
 
 
-# start stub_resolver
-sleep 1
-python3 src/stub_resolver.py  &
+
 
 # wait for execution
-
-
 sleep 3
-echo Press [q] + [Enter] to stop execution.
 
 while true
 do
-    read ipt
+    read -p "
+    What do you want to do:
+    [q] : terminate program
+    [1] : test recursive resolver
+    [2] : test cache
+    [3] : test http proxy
+    " -n 1 -r
+    echo 
 
-    if [[ $ipt == "Q" || $ipt == "q" ]]; then
-        pkill -9 -f "^python3 src/.*"
-        break 
+    case $REPLY in 
+        "q" | "Q")
+            pkill -9 -f "^python3 src/.*"
+            break
+            ;;
+        "1")
+            python3 src/stub_resolver.py 1 &
+            sleep 3
+            ;;
+        "2")
+            python3 src/stub_resolver.py 2 &
+            sleep 3
+            ;;
+        "3")
+            python3 src/stub_resolver.py 3 &
+            sleep 3
+            ;;
+        *)
+        ;;
+    esac
 
-    else
-        echo 
-    fi
 done
 
 

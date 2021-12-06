@@ -70,7 +70,7 @@ class StubResolver:
 
 
 
-
+# tests
 def test1() -> None :
     # start stub resolver (client)
     stub_resolver = StubResolver()
@@ -129,4 +129,18 @@ def test3() -> None:
     webbrowser.open_new_tab(url)
 
 
-test3()
+
+import sys
+if len(sys.argv) < 1:
+    exit()
+
+print(sys.argv[1])
+
+if sys.argv[1] == "1":
+    test1()
+elif sys.argv[1] == "2":
+    test2()
+elif sys.argv[1] == "3":
+    test3()
+else:
+    pass
