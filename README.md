@@ -66,6 +66,7 @@ Start programs from root directory
 ### Local DNS
 - Our local DNS consists of the following domains and IPs in the form of the tree structure shown:
 
+TODO correct structure
 ```
 Tree structure:
 (0) root 
