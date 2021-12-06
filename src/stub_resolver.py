@@ -46,8 +46,6 @@ class StubResolver:
             (timestamp_resp - timestamp_req).total_seconds() * 1000
         )
 
-        # TODO make prints pretty based on NS and A
-
         StubResolver.print(
             f"Query: {dns_response.request.name} {str(QryType(dns_response.request.dns_qry_type)).split('.')[1]}"
         )
@@ -91,10 +89,12 @@ test_queries: List[str] = [
     # "ns.switch.telematik NS",
     # "ns.router.telematik A",
     # "ns.router.telematik A",
-    #
+
+    "linux.pcpools.fuberlin A",
+
     # "easy.homework.fuberlin A",
     # "easy.homework.fuberlin NS",
-    "youtube.com NS",
+    #"youtube.com NS",
 ]
 
 for query in test_queries:
