@@ -124,7 +124,7 @@ Name Server Tree structure:
 (0) ns.root [127.0.0.11]
     (1) ns.telematik [127.0.0.12]
         (2) ns.switch.telematik [127.0.0.13]
-        (2) ns.router.telematik [27.0.0.14]
+        (2) ns.router.telematik [127.0.0.14]
     (1) ns.fuberlin [127.0.0.15]
         (2) ns.homework.fuberlin [127.0.0.16]
         (2) ns.pcpools.fuberlin [127.0.0.17]
@@ -138,7 +138,6 @@ Name Server Tree structure:
 - The totality of all *zone files* then finally results in the tree structure shown above. 
 For example, the *zone file* `telematik.zone` for the name server *telematik* looks like this:
 
-TODO zone files Aufbau erklären
 ```
 switch.telematik 300 IN NS ns.switch.telematik
 ns.switch.telematik 300 IN A 127.0.0.13
@@ -197,7 +196,7 @@ dns_format = {
     - `RecursiveResolver` receives the request from `StubResolver`. 
     - The request is converted into a suitable `DnsFormat` that holds certain flags for *Request* and *Response*.
 2. name resolution by recursion
-    - DNS tree is traversed by `RecurisveResolver` first sending the request to the *root* name server, assuming the cache is empty. For more details see section [Cache](#2.3. Cache)
+    - DNS tree is traversed by `RecursiveResolver` first sending the request to the *root* name server, assuming the cache is empty. For more details see section [Cache](#2.3. Cache)
     - The response from *root* then leads to either the recursion anchor or another recursion step. 
     - If the recursion leads up to a leaf and the request cannot be resolved, the recursion terminates. Otherwise, the recursion continues.
 3. return answer 
@@ -212,10 +211,10 @@ dns_format = {
 2. name resolution by zone-file
     - If one of the `DnsServer` receives a request, it tries to resolve it with `DnsServer.resolve_qry()`. 
     - Several cases exist here (ns = requested nameserver):
-        1. [recursion anchor] ns is root & root is searched for
-        2 [recursion anchor] ns knows a direct child that is being searched for  
-        3. [recursion anchor] ns does not know a child being searched for or a child with matching suffix
-        4. [recursion anchor] ns knows a child with matching suffix of the searched domain
+        1. [recursion anchor] NS is root & root is searched for
+        2. [recursion anchor] NS knows a direct child that is being searched for  
+        3. [recursion anchor] NS knows a child with matching suffix of the searched domain
+        4. [recursion anchor] NS does not know a child being searched for or a child with matching suffix 
 3. return answer 
     - The determined answer is sent back to the `RecursiveResolver` in the form of `DnsFormat`
 
@@ -225,24 +224,25 @@ If query asks for NS record of a auth. nameserver (e.g. `ns.telematik NS`) our p
 because it is already the auth. NS.
 
 ### Logging
-The logging procedure is implemented at the recursive resolver and the dns servers. If log files are not initialised, this is taken care of at server start. Furthermore, there are several accumulator counters at each server, which do keep track of the incoming/outgoing requests/responses and every *n* seconds a new line with the incremented with the accumulator old values from the log is added, in order to keep track of the measures. The procedure runs in the background and does so, until the server is shut down.
+- The logging procedure is implemented at the `RecursiveResolver` and the dns servers. 
+- If log files are not initialised, this is taken care of at server start. 
+- Furthermore, there are several accumulator counters at each server, which do keep track of the incoming/outgoing requests/responses and every *n* seconds a new line with the incremented with the accumulator old values from the log is added, in order to keep track of the measures. The procedure runs in the background and does so, until the server is shut down.
 
 ## 2.3. Cache
-`TODO Lukas`
-- The cache is basically a dictionary with the domain name and query type (NS-RR or A-RR represented through an Enum as an Integer) as key and a CacheEntry object as value.
-- A CacheEntry consists of a value (for this project always an IP address) and a timestamp after which the entry has to be removed, that is calculated by using a timestamp of the current time and adding the ttl.
+- The `Cache` is basically a dictionary with the domain name and query type (*NS-RR* or *A-RR* represented through an Enum as an Integer) as key and a `CacheEntry` object as value.
+- A `CacheEntry` consists of a value (for this project always an IP address) and a timestamp after which the entry has to be removed, that is calculated by using a timestamp of the current time and adding the ttl.
 - Expired cache entries are periodically removed by an extra thread.
-- In this project only the Recursive Resolver has a cache and every response to the Recursive Resolver, that is not an error, is cached.
+- In this project only the `RecursiveResolver` has a cache and every response to the `RecursiveResolver`, that is not an error, is cached.
 - There are two ways cache entries are used to reduce the number of requests sent to the Name Servers:
   1. The requested name together with the requested Resource Record is already contained in the cache, then the corresponding value (IP address) is used for the response.
-  2. A suffix of the requested name together with Resource Record type NS is already contained in the cache, then the recursive resolver sends its request to the IP address of that Name Server instead of to root. A simplified example: The cache already contains the key for name fuberlin with resource record NS, then it will send a request for the A-RR of homework.fuberlin to fuberlin (to ns.fuberlin to be exact) instead of to root.
-- The leading "ns." of our name servers is cut before it is written in the cache, so that the cache entry always points to a domain name.
-- Caching can be tested by making subsequent requests to the Stub Resolver without stopping the Recursive Resolver. As every send operation waits 100ms before executing, and the Stub Resolver prints out the total Query time for each request, the Query Time should noticeably decrease if the cache is used.
+  2. A suffix of the requested name together with Resource Record type *NS* is already contained in the cache, then the `RecursiveResolver` sends its request to the IP address of that Name Server instead of to root. A simplified example: The cache already contains the key for name fuberlin with Resource Record *NS*, then it will send a request for the *A-RR* of homework.fuberlin to fuberlin (to ns.fuberlin to be exact) instead of to root.
+- The leading "`ns.`" of our name servers is cut before it is written in the cache, so that the cache entry always points to a domain name.
+- Caching can be tested by making subsequent requests to the `StubResolver` without stopping the `RecursiveResolver`. As every send operation waits 100ms before executing, and the `StubResolver` prints out the total Query time for each request, the Query Time should noticeably decrease if the cache is used.
 
 ## 2.4. HTTP Proxy / HTTP Server
 Two http servers were implemented in order to solve the second part of the project description. 
 
-- The HTTP server is implemented in the <code>http_server.py</code> file and runs on 127.0.0.80 and port 8080. We did add the server to the zone file of the switch.telematik authorative dns server, in order to be able to obtain it afterwards in the http proxy. The server does return a simple web-page, which says "You reached the server!". The domain name we chose corresponds to **http.switch.telematik**
+- The HTTP server is implemented in the <code>http_server.py</code> file and runs on 127.0.0.80 and port 8080. The server is included in the zone file of the switch.telematik authorative dns server, in order to be able to obtain it afterwards in the http proxy. The server does return a simple web-page, which says "You reached the server!". The domain name we chose corresponds to **www.switch.telematik**
 - The HTTP proxy is implemented in the <code>http_proxy.py</code> file. As a GET request is required, we pass the domain name as an url [query parameter](https://en.wikipedia.org/wiki/Query_string).
   - the ip adress of the HTTP proxy is 127.0.0.90 and the chosen port is 8090.
   - The query parameter is named url. Therefore a request shall be formatted in the following way: 
@@ -257,10 +257,10 @@ Two http servers were implemented in order to solve the second part of the proje
 
 ## 3. Limitations
 Our implementation of a DNS provides only the basic functionalities. Limitations of our implementation are among other things:
-    - For the zone *root*, some things are hardcoded since no *zone file* exists that specifies a nameserver or IP address for it.
-    - All our *zone files* only cover *A* and *NS records*.
-    - For one *zone* exists exactly one nameserver  
-    - HTTP proxy cannot find a favicon and therefore gives warnings when entering URLs
+- For the zone *root*, some things are hardcoded since no *zone file* exists that specifies a nameserver or IP address for it.
+- All our *zone files* only cover *A* and *NS records*.
+- For one *zone* exists exactly one nameserver  
+- HTTP proxy cannot find a favicon and therefore gives warnings when entering URLs
 
 
 ## 4. Team & Participation
