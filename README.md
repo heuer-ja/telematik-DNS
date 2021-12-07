@@ -33,7 +33,7 @@
 
 
 <a name="prereq"></a>
-## 1.1 Prerequirements
+## 1.1. Prerequirements
 
 
 <a name="os"></a>
@@ -57,7 +57,7 @@
 
 
 <a name="commands"></a>
-## 1.2 Commands
+## 1.2. Commands
 Start programs from root directory
 
 <a name="run"></a>
@@ -95,7 +95,7 @@ Start programs from root directory
         5. pkill -9 -f src/http_server.py
 
 <a name="prints"></a>
-## 1.3 Prints & Colors 
+## 1.3. Prints & Colors 
 - During execution, the run is printed. 
 - If you use a console/terminal that supports colors, colors will be displayed.
 
@@ -106,7 +106,7 @@ Start programs from root directory
 | `DnsServer`  | purple | (1) redirected query from `RecurisveResolver` (2) calculated response (name resolution) |
 
 <a name="tests"></a>
-## 1.4 Tests
+## 1.4. Tests
 - In total there are 4 tests
 - The easiest way to start these tests is via `run.sh`
 - Test description
@@ -139,7 +139,7 @@ Start programs from root directory
 # 2. Documentation
 
 <a name="general"></a>
-## 2.1 General
+## 2.1. General
 
 <a name="localdns"></a>
 ### Local DNS
@@ -230,7 +230,7 @@ dns_format = {
 - This ensures parallel execution of these instances.
 
 <a name="localnameresolution"></a>
-## 2.2 Local Name Resolution
+## 2.2. Local Name Resolution
 
 <a name="stub"></a>
 ### Stub Resolver
