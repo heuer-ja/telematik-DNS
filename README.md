@@ -1,11 +1,25 @@
 1. [ Execution ](#exe)
     1. [ Prerequirements ](#prereq)
+        1. [ Operating System ](#os)
+        2. [ Python Libraries/Packages](#libs)
+        3. [ Directories ](#directories)
     2. [ Commands ](#commands)
+        1. [ Variant 1: Run script ](#run)
+        2. [ Variant 2: Separate files ](#separate)
+        3. [ Error handling ](#errorhandling)
     3. [ Prints & Colors  ](#prints)
     4. [ Tests ](#tests)
 2. [ Documentation ](#docu)
     1. [ General ](#general)
+        1. [ Local DNS ](#localdns)
+        2. [ Zone Files](#zonefiles)
+        3. [ DNS Format ](#dnsformat)
+        4. [ Parallel Execution ](#parallel)
     2. [ Local Name Resolution ](#localnameresolution)
+        1. [ Stub Resolver ](#stub)
+        2. [ Recursive Resolver ](#recursiveresolver)
+        3. [ Nameservers ](#nameservers)
+        4. [ Logging ](#logging)
     3. [ Cache ](#cache)
     4. [ HTTP Proxy / HTTP Server ](#http)
 3. [ Limitations ](#limits)
@@ -19,10 +33,12 @@
 <a name="prereq"></a>
 ## 1.1 Prerequirements
 
+
+<a name="os"></a>
 ### Operating System 
 - Linux is required for using the specified `commands` in this file. 
 
-
+<a name="libs"></a>
 ### Python Libraries/Packages
 - One must install `pandas`, as it is required for our project.
 - This could be done, depending on the package manager with: 
@@ -32,6 +48,7 @@
 | `pip install pandas`  | `conda install pandas` |
 
 
+<a name="directories"></a>
 ### Directories
 - directory `res/logs` has to exist, otherwise logging throws an error 
     - when properly cloning this repository, it already exists
@@ -41,6 +58,7 @@
 ## 1.2 Commands
 Start programs from root directory
 
+<a name="run"></a>
 ### Variant 1: Run script
 - You can start the entire *DNS* with a *run script* called `run.sh`:
 - Run with combined command (Linux): `chmod u+x run.sh && ./run.sh`
@@ -48,6 +66,7 @@ Start programs from root directory
     1. `chmod u+x run.sh`
     2. `./run.sh`
 
+<a name="separate"></a>
 ### Variant 2: Separate files
 - Alternatively, you can run all files on its own.
 - Therefore, start all files on a separate terminal.
@@ -62,7 +81,7 @@ Start programs from root directory
     4. `python3 src/http_proxy.py` - run HTTP proxy
     5. `python3 src/http_server.py` - run HTTP server  
 
-
+<a name="error"></a>
 ### Error handling
 - If, for whatever reason, the used addresses are blocked after running the scripts, the following command will help under *Linux*:
     1. Combined `pkill -9 -f "^python3 src/.*"`
@@ -119,6 +138,8 @@ Start programs from root directory
 
 <a name="general"></a>
 ## 2.1 General
+
+<a name="localdns"></a>
 ### Local DNS
 - Our local DNS consists of the following domains and IPs in the form of the tree structure shown:
 
@@ -156,6 +177,8 @@ Name Server Tree structure:
 - Every Name Server is authoritative for the subdomain that has the same name (without the leading "ns.")
 - Additionally the Name Servers on layer (2) are authoritative for the subdomains on layer (3) (e.g. ns.switch.telematik is authoritative for www.switch.telematik) 
 
+
+<a name="zonefiles"></a>
 ### Zone Files
 - We use *zone files* to store for each nameserver `DnsServer` its children within the tree structure as well as their records. This is done by using Glue Records.
 - The attribute `DnsServer.zone_file` gives a nameserver access to its own *zone file*. 
@@ -172,6 +195,7 @@ ns.router.telematik 300 IN A 127.0.0.14
 telematik 300 IN A 127.0.0.32
 ```
 
+<a name="dnsformat"></a>
 ### DNS Format
 - The `DnsFormat` class contains all DNS flags specified from the task. 
 - Instances of `DnsFormat` are passed back and forth from the `StubResolver`, `RecursiveResolver` and `DnsServer` classes in the form of `json` strings. 
@@ -198,13 +222,15 @@ dns_format = {
 }
 
 ```
-
+<a name="parallel"></a>
 ### Parallel execution
 - Threads are used for all name servers `DnsServer`. 
 - This ensures parallel execution of these instances.
 
 <a name="localnameresolution"></a>
 ## 2.2 Local Name Resolution
+
+<a name="stub"></a>
 ### Stub Resolver
 1. send
     - `StubResolver` sends a request to `RecursiveResolver`, which receives it. 
@@ -215,6 +241,7 @@ dns_format = {
 3. output
     - After receiving the response from `RecursiveResolver`, the response is printed.
 
+<a name="recursiveresolver"></a>
 ### Recursive Resolver
 1. receive
     - `RecursiveResolver` receives the request from `StubResolver`. 
@@ -226,7 +253,7 @@ dns_format = {
 3. return answer 
     - The response determined in the recursion is sent back to the `StubResolver` in the form of `DnsFormat`
 
-
+<a name="nameservers"></a>
 ### Nameservers
 1. receive
     - Each name server `DnsServer` runs in its own thread and uses polling to wait for a request from `RecursiveResolver`.  
@@ -246,6 +273,8 @@ dns_format = {
 If query asks for NS record of a auth. nameserver (e.g. `ns.telematik NS`) our program throws ErrorCode.SERVFAIL, 
 because it is already the auth. NS.
 
+
+<a name="logging"></a>
 ### Logging
 - The logging procedure is implemented at the `RecursiveResolver` and the dns servers. 
 - If log files are not initialised, this is taken care of at server start. 
