@@ -165,7 +165,7 @@ dns_format = {
     - `RecursiveResolver` receives the request from `StubResolver`. 
     - The request is converted into a suitable `DnsFormat` that holds certain flags for *Request* and *Response*.
 2. name resolution by recursion
-    - DNS tree is traversed by `RecurisveResolver` first sending the request to the *root* name server, assuming the cache is empty. For more details see section [Cache](#2.3.-Cache)
+    - DNS tree is traversed by `RecurisveResolver` first sending the request to the *root* name server, assuming the cache is empty. For more details see section [Cache](#2.3.Cache)
     - The response from *root* then leads to either the recursion anchor or another recursion step. 
     - If the recursion leads up to a leaf and the request cannot be resolved, the recursion terminates. Otherwise, the recursion continues.
 3. return answer 
@@ -195,7 +195,7 @@ because it is already the auth. NS.
 ### Logging
 The logging procedure is implemented at the recursive resolver and the dns servers. If log files are not initialised, this is taken care of at server start. Furthermore, there are several accumulator counters at each server, which do keep track of the incoming/outgoing requests/responses and every *n* seconds a new line with the incremented with the accumulator old values from the log is added, in order to keep track of the measures. The procedure runs in the background and does so, until the server is shut down.
 
-## 2.3. Cache
+## 2.3.Cache
 `TODO Lukas`
 - The cache is basically a dictionary with the domain name and query type (NS-RR or A-RR represented through an Enum as an Integer) as key and a CacheEntry object as value.
 - A CacheEntry consists of a value (for this project always an IP address) and a timestamp after which the entry has to be removed, that is calculated by using a timestamp of the current time and adding the ttl.
