@@ -1,4 +1,3 @@
-
 # Table of Contents
 1. [ Execution ](#exe)
     1. [ Prerequirements ](#prereq)
@@ -83,7 +82,7 @@ Start programs from root directory
     4. `python3 src/http_proxy.py` - run HTTP proxy
     5. `python3 src/http_server.py` - run HTTP server  
 
-<a name="error"></a>
+<a name="errorhandling"></a>
 ### Error Handling
 - If, for whatever reason, the used addresses are blocked after running the scripts, the following command will help under *Linux*:
     1. Combined `pkill -9 -f "^python3 src/.*"`
