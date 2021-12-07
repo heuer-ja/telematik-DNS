@@ -1,7 +1,7 @@
 homework.fuberlin 300 IN NS ns.homework.fuberlin
-ns.homework.fuberlin 300 IN A 127.0.0.16
-
 pcpools.fuberlin 300 IN NS ns.pcpools.fuberlin
+
+ns.homework.fuberlin 300 IN A 127.0.0.16
 ns.pcpools.fuberlin 300 IN A 127.0.0.17
 
 fuberlin 300 IN A 127.0.0.35

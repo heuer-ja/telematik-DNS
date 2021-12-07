@@ -66,37 +66,55 @@ Start programs from root directory
 ### Local DNS
 - Our local DNS consists of the following domains and IPs in the form of the tree structure shown:
 
-TODO correct structure
 ```
-Tree structure:
+Domain Tree structure:
 (0) root 
-    (1) telematik [127.0.0.12]
-        (2) switch.telematik [127.0.0.13]
-            (3) www.switch.telematik [127.0.0.21]
+    (1) telematik [127.0.0.32]
+        (2) switch.telematik [127.0.0.33]
+            (3) www.switch.telematik [127.0.0.80]
             (3) mail.switch.telematik [127.0.0.22]
-        (2) router.telematik [27.0.0.14]
+        (2) router.telematik [27.0.0.34]
             (3) news.router.telematik [127.0.0.23]
             (3) store.router.telematik [127.0.0.24]
-    (1) fuberlin [127.0.0.15]
-        (2) homework.fuberlin [127.0.0.16]
+    (1) fuberlin [127.0.0.35]
+        (2) homework.fuberlin [127.0.0.36]
             (3) easy.homework.fuberlin [127.0.0.25]
             (3) hard.homework.fuberlin [127.0.0.26]
-        (2) pcpools.fuberlin [127.0.0.17]
+        (2) pcpools.fuberlin [127.0.0.37]
             (3) linux.pcpools.fuberlin [127.0.0.27]
             (3) macos.pcpools.fuberlin [127.0.0.28]
             (3) windows.pcpools.fuberlin [127.0.0.29]
 ```
 
+- Meanwhile the Name Servers are structured as follows:
+```
+Name Server Tree structure:
+(0) ns.root [127.0.0.11]
+    (1) ns.telematik [127.0.0.12]
+        (2) ns.switch.telematik [127.0.0.13]
+        (2) ns.router.telematik [27.0.0.14]
+    (1) ns.fuberlin [127.0.0.15]
+        (2) ns.homework.fuberlin [127.0.0.16]
+        (2) ns.pcpools.fuberlin [127.0.0.17]
+```
+- Every Name Server is authoritative for the subdomain that has the same name (without the leading "ns.")
+- Additionally the Name Servers on layer (2) are authoritative for the subdomains on layer (3) (e.g. ns.switch.telematik is authoritative for www.switch.telematik) 
+
 ### Zone Files
-- We use *zone files* to store for each nameserver `DnsServer` its children within the tree structure as well as their records.
+- We use *zone files* to store for each nameserver `DnsServer` its children within the tree structure as well as their records. This is done by using Glue Records.
 - The attribute `DnsServer.zone_file` gives a nameserver access to its own *zone file*. 
 - The totality of all *zone files* then finally results in the tree structure shown above. 
 For example, the *zone file* `telematik.zone` for the name server *telematik* looks like this:
 
 TODO zone files Aufbau erklären
 ```
-switch.telematik;300 IN NS 127.0.0.13
-router.telematik;300 IN NS 127.0.0.14
+switch.telematik 300 IN NS ns.switch.telematik
+ns.switch.telematik 300 IN A 127.0.0.13
+
+router.telematik 300 IN NS ns.router.telematik
+ns.router.telematik 300 IN A 127.0.0.14
+
+telematik 300 IN A 127.0.0.32
 ```
 
 ### DNS Format
@@ -147,14 +165,14 @@ dns_format = {
     - `RecursiveResolver` receives the request from `StubResolver`. 
     - The request is converted into a suitable `DnsFormat` that holds certain flags for *Request* and *Response*.
 2. name resolution by recursion
-    - DNS tree is traversed by `RecurisveResolver` first sending the request to the *root* name server. 
+    - DNS tree is traversed by `RecurisveResolver` first sending the request to the *root* name server, assuming the cache is empty. For more details see section [Cache](#2.3.-Cache)
     - The response from *root* then leads to either the recursion anchor or another recursion step. 
     - If the recursion leads up to a leaf and the request cannot be resolved, the recursion terminates. Otherwise, the recursion continues.
 3. return answer 
     - The response determined in the recursion is sent back to the `StubResolver` in the form of `DnsFormat`
 
 
-
+`TODO unter 2.`
 ### Nameservers
 1. receive
     - Each name server `DnsServer` runs in its own thread and uses polling to wait for a request from `RecursiveResolver`.  
@@ -179,6 +197,15 @@ The logging procedure is implemented at the recursive resolver and the dns serve
 
 ## 2.3. Cache
 `TODO Lukas`
+- The cache is basically a dictionary with the domain name and query type (NS-RR or A-RR represented through an Enum as an Integer) as key and a CacheEntry object as value.
+- A CacheEntry consists of a value (for this project always an IP address) and a timestamp after which the entry has to be removed, that is calculated by using a timestamp of the current time and adding the ttl.
+- Expired cache entries are periodically removed by an extra thread.
+- In this project only the Recursive Resolver has a cache and every response to the Recursive Resolver, that is not an error, is cached.
+- There are two ways cache entries are used to reduce the number of requests sent to the Name Servers:
+  1. The requested name together with the requested Resource Record is already contained in the cache, then the corresponding value (IP address) is used for the response.
+  2. A suffix of the requested name together with Resource Record type NS is already contained in the cache, then the recursive resolver sends its request to the IP address of that Name Server instead of to root. A simplified example: The cache already contains the key for name fuberlin with resource record NS, then it will send a request for the A-RR of homework.fuberlin to fuberlin (to ns.fuberlin to be exact) instead of to root.
+- The leading "ns." of our name servers is cut before it is written in the cache, so that the cache entry always points to a domain name.
+- Caching can be tested by making subsequent requests to the Stub Resolver without stopping the Recursive Resolver. As every send operation waits 100ms before executing, and the Stub Resolver prints out the total Query time for each request, the Query Time should noticeably decrease if the cache is used.
 
 ## 2.4. HTTP Proxy / HTTP Server
 Two http servers were implemented in order to solve the second part of the project description. 
@@ -189,7 +216,7 @@ Two http servers were implemented in order to solve the second part of the proje
   - The query parameter is named url. Therefore a request shall be formatted in the following way: 
   > http://127.0.0.90:8090?url=www.google.com
   
-  where www.google.com is just an example url. Addititonal cases like google.com are not considered, due to the overcomplication of the task.
+  where www.google.com is just an example url. Additional cases like google.com are not considered, due to the overcomplication of the task.
   If 
   > http://127.0.0.90:8090?url=www.switch.telematik
   
@@ -216,8 +243,8 @@ Our implementation of a DNS provides only the basic functionalities. Limitations
 
 | task          | people involved                     |
 | ------------- | ----------------------------------- |
-| Milestone (a) | Leo, Leslie, Joel                   |
-| Milestone (b) | Leo, Leslie, Joel                   |
+| Milestone (a) | Leo, Leslie, Joel, Lukas            |
+| Milestone (b) | Leo, Leslie, Joel, Lukas            |
 | Milestone (c) | Lukas                               |
 | Milestone (d) | Viktoriya                           |
 | Management    | Leo, Leslie, Joel                   |

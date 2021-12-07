@@ -93,11 +93,11 @@ def test1() -> None :
         # "ns.router.telematik A",
         # "ns.router.telematik A",
 
-        "linux.pcpools.fuberlin A",
+        # "linux.pcpools.fuberlin A",
 
         # "easy.homework.fuberlin A",
         # "easy.homework.fuberlin NS",
-        #"youtube.com NS",
+        # "youtube.com NS",
     ]
 
     for query in test_queries:

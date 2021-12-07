@@ -114,11 +114,10 @@ class RecursiveResolver:
             )
             self.requests_received += 1
 
-            # tramsform request into format
+            # transform request into format
             msg_parts = msg.split()
             ns_of_interest: str = msg_parts[0]
 
-            record: int = 0
             if len(msg_parts) < 2:
                 record = QryType.A.value
             else:
@@ -245,9 +244,8 @@ class RecursiveResolver:
                     dns_response.request.name, dns_response.request.dns_qry_type
                 ] = CacheEntry(dns_response.response.dns_a, timestamp_remove)
 
-            # Don't put the name of the NS into the cache but instead the domain it is responsible for, by using only
-            # the overlapping suffix of the name and NS (ns.telematik --> telematik). This would not work if the name
-            # of the NS does not have a suffix with the domain it is authoritative for!
+            # Don't put the name of the NS into the cache but instead the domain it is responsible for, by cutting
+            # off the leading ".ns"
             elif dns_response.response.dns_flags_rcode == RCodes.NOTAUTH.value:
                 dns_ns_suffix: str = dns_response.response.dns_ns[3:len(dns_response.response.dns_ns)] \
                     if dns_response.response.dns_ns.startswith("ns.") \
