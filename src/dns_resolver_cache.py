@@ -3,7 +3,7 @@ import threading
 
 from typing import Dict, Tuple
 
-timer_val: int = 10
+timer_val: int = 30
 
 
 class CacheEntry:
