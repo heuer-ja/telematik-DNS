@@ -75,28 +75,28 @@ def test1() -> None :
     stub_resolver = StubResolver()
 
     test_queries: List[str] = [
-        # "root",
-        # "root A",
-        # "root NS",
-        # "ns.root A",
-        # "ns.root NS",
-        #
-        # "telematik A",
-        # "fuberlin NS",
-        # "ns.fuberlin NS",
-        # "ns.fuberlin A",
-        #
-        # "switch.telematik NS",
-        # "router.telematik A",
-        # "ns.switch.telematik NS",
-        # "ns.router.telematik A",
-        # "ns.router.telematik A",
+        "root",
+        "root A",
+        "root NS",
+        "ns.root A",
+        "ns.root NS",
 
-        # "linux.pcpools.fuberlin A",
+        "telematik A",
+        "fuberlin NS",
+        "ns.fuberlin NS",
+        "ns.fuberlin A",
 
-        # "easy.homework.fuberlin A",
-        # "easy.homework.fuberlin NS",
-        # "youtube.com NS",
+        "switch.telematik NS",
+        "router.telematik A",
+        "ns.switch.telematik NS",
+        "ns.router.telematik A",
+        "ns.router.telematik A",
+
+        "linux.pcpools.fuberlin A",
+
+        "easy.homework.fuberlin A",
+        "easy.homework.fuberlin NS",
+        "youtube.com NS",
     ]
 
     for query in test_queries:
