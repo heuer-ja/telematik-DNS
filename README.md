@@ -4,10 +4,10 @@
     3. [ Prints & Colors  ](#prints)
     4. [ Tests ](#tests)
 2. [ Documentation ](#docu)
-    2. [ General ](#general)
+    1. [ General ](#general)
     2. [ Local Name Resolution ](#localnameresolution)
-    2. [ Cache ](#cache)
-    2. [ HTTP Proxy / HTTP Server ](#http)
+    3. [ Cache ](#cache)
+    4. [ HTTP Proxy / HTTP Server ](#http)
 3. [ Limitations ](#limits)
 3. [ Team & Participation ](#team)
 
