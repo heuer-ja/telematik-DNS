@@ -35,7 +35,11 @@ Start programs from root directory
     1. `python3 src/dns_server.py` - run all nameservers
     2. `python3 src/recursive_resolver.py` - run recursive resolver
     3. `python3 src/stub_resolver.py` - run stub resolver
-        - input sth. like "linux.pcpools.fuberlin A"
+        - `python3 src/stub_resolver.py 1` - run test1 (some examplary queries)
+        - `python3 src/stub_resolver.py 2` - run test2 (cache)
+        - `python3 src/stub_resolver.py 3` - run test3 (http proxy)
+        - `python3 src/stub_resolver.py 4 www.switch.telematik A` run test4 (own query)
+
     4. `python3 src/http_proxy.py` - run HTTP proxy
     5. `python3 src/http_server.py` - run HTTP server  
 
@@ -59,6 +63,34 @@ Start programs from root directory
 | `StubResolver`  | green | (1) input query (2) final response from `RecurisveResolver` |
 | `RecursiveResolver`  | yellow | (1) input Query from `StubResolver` (2) responses from different `DnsServer` |
 | `DnsServer`  | purple | (1) redirected query from `RecurisveResolver` (2) calculated response (name resolution) |
+
+## 1.4 Tests
+- In total there are 4 tests
+- The easiest way to start these tests is via `run.sh`
+- Test description
+    - Test 1 (*Checkpoint b - Recursive Resolver*)
+        - tests whether the recursive resolver can resolve names
+        - several different queries are sent from `StubResolver` to `RecursiveResolver`
+        - multiple responses are printed
+    - Test 2 (*Checkpoint c - Cache*)
+        - tests whether the cache is working
+        - several similar queries are sent from `StubResolver` to `RecursiveResolver`
+        - you can see that the measured time is reduced
+    - Test 3 (*Checkpoint d - HTTP Proxy*)
+        - tests the *HTTP Proxy* and *HTTP Server*.
+        - opens internet browser in several tabs
+            - Tab 1: *www.switch.telematik* (local DNS)
+            - Tab 2: *wikepedia.com* (external DNS)
+    - Test 4 (Do it yourself - Local DNS)
+        - here you can enter your own queries
+        - Access to HTTP proxy not possible via console
+        - repeating test 4 allows to test the cache  
+    - Test 5 (Do it yourself 2 - HTTP Proxy)
+        - not included in `run.sh`
+        - you have to open your browser 
+        - enter the URL *http://127.0.0.90:8090/?url={YOUR_DOMAIN}*
+        - replace *{YOUR_DOMAIN}* with any domain you like 
+        - see whether your domain is resolved by our DNS
 
 # 2. Documentation
 
