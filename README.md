@@ -329,7 +329,7 @@ Our implementation of a DNS provides only the basic functionalities. Limitations
 - Viktoriya (Viktoriya Kraleva)
 
 
-| task          | people involved                     |
+| Task          | People involved                     |
 | ------------- | ----------------------------------- |
 | Milestone (a) | Leo, Leslie, Joel, Lukas            |
 | Milestone (b) | Leo, Leslie, Joel, Lukas            |
