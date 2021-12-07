@@ -51,12 +51,14 @@ do
 
     What do you want to do:
     [q] : terminate program
-    [1] : test recursive resolver (exemplary queries)
-    [2] : test cache              (same name is search 2x)
-    [3] : test http proxy         (opens your browser)
-    [4] : test your own query     (e.g. 'switch.telematik A')
+    [1] : test recursive resolver       (8 exemplary queries | WARNING: a lot of prints)
+    [2] : test cache                    (same name is searched 2x)
+    [3] : test http proxy               (opens your browser)
+    [4] : test your own query           (e.g. 'switch.telematik A')
     " -n 1 -r
     echo 
+
+    pkill -9 -f src/recursive_resolver.py
 
     case $REPLY in 
         "q"|"Q")
@@ -67,7 +69,7 @@ do
             python3 src/recursive_resolver.py &
             sleep 3
             python3 src/stub_resolver.py 1 &
-            sleep 5
+            sleep 10
             ;;
         "2")
             python3 src/recursive_resolver.py &
@@ -113,6 +115,4 @@ do
         *)
         ;;
     esac
-
-    pkill -9 -f src/recursive_resolver.py
 done

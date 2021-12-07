@@ -109,8 +109,9 @@ class RecursiveResolver:
             # receive request
             msg, addr_client = self.rec_resolver.recvfrom(CONST.BUFFER)
             msg = msg.decode("utf-8")
+            RecursiveResolver.print(f"------------------------")
             RecursiveResolver.print(
-                f"------------------\nRECURSIVE RESOLVER received query: '{msg}' from {addr_client}"
+                f"RECURSIVE RESOLVER received query: '{msg}' from {addr_client}"
             )
             self.requests_received += 1
 
@@ -157,7 +158,9 @@ class RecursiveResolver:
                     if index_sep == -1:
                         break
                     else:
-                        ns_of_interest_suffix = ns_of_interest_suffix[index_sep + 1:len(ns_of_interest_suffix)]
+                        ns_of_interest_suffix = ns_of_interest_suffix[
+                            index_sep + 1 : len(ns_of_interest_suffix)
+                        ]
                         cache_entry = self.cache.get(
                             (ns_of_interest_suffix, QryType.NS.value)
                         )
@@ -244,15 +247,17 @@ class RecursiveResolver:
             # Don't put the name of the NS into the cache but instead the domain it is responsible for, by cutting
             # off the leading ".ns"
             elif dns_response.response.dns_flags_rcode == RCodes.NOTAUTH.value:
-                dns_ns_suffix: str = dns_response.response.dns_ns[3:len(dns_response.response.dns_ns)] \
-                    if dns_response.response.dns_ns.startswith("ns.") \
+                dns_ns_suffix: str = (
+                    dns_response.response.dns_ns[3 : len(dns_response.response.dns_ns)]
+                    if dns_response.response.dns_ns.startswith("ns.")
                     else dns_response.response.dns_ns
+                )
 
-                self.cache[
-                    dns_ns_suffix, QryType.NS.value
-                ] = CacheEntry(dns_response.response.dns_a, timestamp_remove)
+                self.cache[dns_ns_suffix, QryType.NS.value] = CacheEntry(
+                    dns_response.response.dns_a, timestamp_remove
+                )
 
-        RecursiveResolver.print(f"REC. RES. received: \n {dns_response.toJsonStr()}\n")
+        RecursiveResolver.print(f"REC. RES. received: \n {dns_response.toJsonStr()}")
 
         # [recursion step]
         return self.recursion(dns_request=dns_response)

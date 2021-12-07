@@ -31,7 +31,7 @@ class StubResolver:
     def resolve_name(self, input_query: str) -> None:
 
         # input & send
-        StubResolver.print(f"\n-------------------------\nQuery: {input_query}")
+        StubResolver.print(f"New Query: {input_query}")
         timestamp_req: datetime.datetime = datetime.datetime.now()
         time.sleep(0.100)
         self.client.sendto(str.encode(input_query), (CONST.IP_REC_RESOLVER, CONST.PORT))
@@ -67,6 +67,9 @@ class StubResolver:
         StubResolver.print(f"\nFull Response: {dns_response.response}")
         StubResolver.print(f"\nQuery Time: {query_time_delta} msec")
 
+        StubResolver.print(f"=============================")
+        StubResolver.print(f"============[END]============")
+        StubResolver.print(f"=============================\n")
 
 
 # tests
@@ -75,26 +78,26 @@ def test1() -> None :
     stub_resolver = StubResolver()
 
     test_queries: List[str] = [
-        "root",
+        #"root",
         "root A",
-        "root NS",
-        "ns.root A",
-        "ns.root NS",
+        #"root NS",
+        #"ns.root A",
+        #"ns.root NS",
 
         "telematik A",
-        "fuberlin NS",
-        "ns.fuberlin NS",
+        #"fuberlin NS",
+        
+        #"ns.fuberlin NS",
         "ns.fuberlin A",
 
         "switch.telematik NS",
-        "router.telematik A",
-        "ns.switch.telematik NS",
-        "ns.router.telematik A",
+        #"router.telematik A",
+        #"ns.switch.telematik NS",
         "ns.router.telematik A",
 
         "linux.pcpools.fuberlin A",
 
-        "easy.homework.fuberlin A",
+        #"easy.homework.fuberlin A",
         "easy.homework.fuberlin NS",
         "youtube.com NS",
     ]
