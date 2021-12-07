@@ -1,12 +1,14 @@
+
+# Table of Contents
 1. [ Execution ](#exe)
     1. [ Prerequirements ](#prereq)
         1. [ Operating System ](#os)
         2. [ Python Libraries/Packages](#libs)
         3. [ Directories ](#directories)
     2. [ Commands ](#commands)
-        1. [ Variant 1: Run script ](#run)
-        2. [ Variant 2: Separate files ](#separate)
-        3. [ Error handling ](#errorhandling)
+        1. [ Variant 1: Run Script ](#run)
+        2. [ Variant 2: Separate Files ](#separate)
+        3. [ Error Handling ](#errorhandling)
     3. [ Prints & Colors  ](#prints)
     4. [ Tests ](#tests)
 2. [ Documentation ](#docu)
@@ -59,7 +61,7 @@
 Start programs from root directory
 
 <a name="run"></a>
-### Variant 1: Run script
+### Variant 1: Run Script
 - You can start the entire *DNS* with a *run script* called `run.sh`:
 - Run with combined command (Linux): `chmod u+x run.sh && ./run.sh`
 - or separate:
@@ -67,7 +69,7 @@ Start programs from root directory
     2. `./run.sh`
 
 <a name="separate"></a>
-### Variant 2: Separate files
+### Variant 2: Separate Files
 - Alternatively, you can run all files on its own.
 - Therefore, start all files on a separate terminal.
     1. `python3 src/dns_server.py` - run all nameservers
@@ -82,7 +84,7 @@ Start programs from root directory
     5. `python3 src/http_server.py` - run HTTP server  
 
 <a name="error"></a>
-### Error handling
+### Error Handling
 - If, for whatever reason, the used addresses are blocked after running the scripts, the following command will help under *Linux*:
     1. Combined `pkill -9 -f "^python3 src/.*"`
     2. Separate: 
