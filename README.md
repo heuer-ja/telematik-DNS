@@ -216,7 +216,7 @@ dns_format = {
         "dns.flags.response": Bool,         # True <-> a result was found
         "dns.flags.rcode": int,             # response code, more information see above at rcodes
         "dns.count.answers": int,           # count of answers
-        "dns.flags.authoritative": boolean, # True <-> auth. DNS server | False <-> rec. DNS server
+        "dns.flags.authoritative": Bool,    # True <-> auth. DNS server | False <-> rec. DNS server
         "dns.a": str,                       # ip address
         "dns.ns": str,                      # name of ns server if existing
         "dns.resp.ttl": int                 # TTL of the record
