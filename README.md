@@ -264,7 +264,7 @@ Our implementation of a DNS provides only the basic functionalities. Limitations
 
 ## 4. Team & Participation
 
-**Legende**
+**Legend**
 - Leo (Leo Lojewski)
 - Leslie (Leslie Hoferichter)
 - Lukas (Lukas Ludwig) 
