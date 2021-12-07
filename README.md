@@ -92,7 +92,7 @@ Name Server Tree structure:
 (0) ns.root [127.0.0.11]
     (1) ns.telematik [127.0.0.12]
         (2) ns.switch.telematik [127.0.0.13]
-        (2) ns.router.telematik [27.0.0.14]
+        (2) ns.router.telematik [127.0.0.14]
     (1) ns.fuberlin [127.0.0.15]
         (2) ns.homework.fuberlin [127.0.0.16]
         (2) ns.pcpools.fuberlin [127.0.0.17]

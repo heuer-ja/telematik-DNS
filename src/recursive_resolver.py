@@ -103,7 +103,7 @@ class RecursiveResolver:
     def listen(self) -> None:
         """listens for stub resolver request and sends response back"""
 
-        RecursiveResolver.print(f"RECURSIVE RESOLVER listining ...")
+        RecursiveResolver.print(f"RECURSIVE RESOLVER listening ...")
 
         while True:
             # receive request
@@ -141,7 +141,6 @@ class RecursiveResolver:
                 (ns_of_interest, cache_record_type)
             )
             if cache_entry is None:
-                print("Kein passender Cache Entry im ersten Schritt gefunden")
                 ns_of_interest_suffix: str = ns_of_interest
 
                 while len(ns_of_interest_suffix) > 0:
@@ -159,7 +158,6 @@ class RecursiveResolver:
                         break
                     else:
                         ns_of_interest_suffix = ns_of_interest_suffix[index_sep + 1:len(ns_of_interest_suffix)]
-                        print(f"ns_of_interest_suffix = {ns_of_interest_suffix}")
                         cache_entry = self.cache.get(
                             (ns_of_interest_suffix, QryType.NS.value)
                         )
@@ -173,7 +171,6 @@ class RecursiveResolver:
                 RecursiveResolver.print(
                     f"recursively searching for {ns_of_interest} {record}-record"
                 )
-                print(f"req = {req.toJsonStr()}")
                 dns_response: DnsFormat = self.recursion(dns_request=req)
             else:
                 ttl: int = math.ceil(
@@ -250,7 +247,6 @@ class RecursiveResolver:
                 dns_ns_suffix: str = dns_response.response.dns_ns[3:len(dns_response.response.dns_ns)] \
                     if dns_response.response.dns_ns.startswith("ns.") \
                     else dns_response.response.dns_ns
-                print(f"dns_ns_suffix endgültig = {dns_ns_suffix}")
 
                 self.cache[
                     dns_ns_suffix, QryType.NS.value
