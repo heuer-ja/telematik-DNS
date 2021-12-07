@@ -129,9 +129,9 @@ class RecursiveResolver:
                     if msg_parts[1] == "NS"
                     else QryType.INVALID.value
                 )
-
             req: DnsFormat = DnsFormat(
-                request=DnsRequestFormat(name=ns_of_interest, dns_qry_type=record)
+                request=DnsRequestFormat(name=ns_of_interest, dns_qry_type=record),
+                response=DnsResponseFormat(),
             )
 
             cache_record_type: int = record
@@ -141,25 +141,29 @@ class RecursiveResolver:
             cache_entry: CacheEntry = self.cache.get(
                 (ns_of_interest, cache_record_type)
             )
+
+            if cache_entry is None:
+                if record == QryType.A.value:
+                    ns_of_interest_suffix_2: str = ns_of_interest
+                    ns_of_interest_suffix_temp: str = ns_of_interest_suffix_2[
+                                                      3:len(ns_of_interest_suffix_2)] \
+                        if ns_of_interest_suffix_2.startswith("ns.") \
+                        else ns_of_interest_suffix_2
+                    cache_entry = self.cache.get(
+                        (ns_of_interest_suffix_temp, QryType.NS.value)
+                    )
+
             if cache_entry is None:
                 ns_of_interest_suffix: str = ns_of_interest
 
                 while len(ns_of_interest_suffix) > 0:
-                    # on first iteration
-                    if ns_of_interest_suffix == ns_of_interest:
-                        cache_entry = self.cache.get(
-                            (ns_of_interest_suffix, QryType.NS.value)
-                        )
-                        if cache_entry is not None:
-                            break
-
                     index_sep: int = ns_of_interest_suffix.find(".")
                     # no more dots in name
                     if index_sep == -1:
                         break
                     else:
                         ns_of_interest_suffix = ns_of_interest_suffix[
-                            index_sep + 1 : len(ns_of_interest_suffix)
+                            index_sep + 1:len(ns_of_interest_suffix)
                         ]
                         cache_entry = self.cache.get(
                             (ns_of_interest_suffix, QryType.NS.value)
