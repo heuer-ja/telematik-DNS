@@ -195,6 +195,10 @@ class RecursiveResolver:
                         dns_resp_ttl=ttl,
                     ),
                 )
+                # if ns record comes directly out of cache we have to prepend the ".ns"
+                if dns_response.request.dns_qry_type == QryType.NS.value:
+                    if not dns_response.response.dns_ns.startswith("ns."):
+                        dns_response.response.dns_ns = "ns." + dns_response.response.dns_ns
 
             # send response
             msg_resolved: str = dns_response.toJsonStr()
