@@ -106,7 +106,6 @@ Name Server Tree structure:
 - The totality of all *zone files* then finally results in the tree structure shown above. 
 For example, the *zone file* `telematik.zone` for the name server *telematik* looks like this:
 
-TODO zone files Aufbau erklären
 ```
 switch.telematik 300 IN NS ns.switch.telematik
 ns.switch.telematik 300 IN A 127.0.0.13
@@ -180,10 +179,10 @@ dns_format = {
 2. name resolution by zone-file
     - If one of the `DnsServer` receives a request, it tries to resolve it with `DnsServer.resolve_qry()`. 
     - Several cases exist here (ns = requested nameserver):
-        1. [recursion anchor] ns is root & root is searched for
-        2 [recursion anchor] ns knows a direct child that is being searched for  
-        3. [recursion anchor] ns does not know a child being searched for or a child with matching suffix
-        4. [recursion anchor] ns knows a child with matching suffix of the searched domain
+        1. [recursion anchor] NS is root & root is searched for
+        2. [recursion anchor] NS knows a direct child that is being searched for  
+        3. [recursion anchor] NS knows a child with matching suffix of the searched domain
+        4. [recursion anchor] NS does not know a child being searched for or a child with matching suffix 
 3. return answer 
     - The determined answer is sent back to the `RecursiveResolver` in the form of `DnsFormat`
 
