@@ -145,13 +145,11 @@ class RecursiveResolver:
             if cache_entry is None:
                 if record == QryType.A.value:
                     ns_of_interest_suffix_2: str = ns_of_interest
-                    ns_of_interest_suffix_temp: str = ns_of_interest_suffix_2[
-                                                      3:len(ns_of_interest_suffix_2)] \
-                        if ns_of_interest_suffix_2.startswith("ns.") \
-                        else ns_of_interest_suffix_2
-                    cache_entry = self.cache.get(
-                        (ns_of_interest_suffix_temp, QryType.NS.value)
-                    )
+                    if ns_of_interest_suffix_2.startswith("ns."):
+                        ns_of_interest_suffix_temp: str = ns_of_interest_suffix_2[3:len(ns_of_interest_suffix_2)]
+                        cache_entry = self.cache.get(
+                            (ns_of_interest_suffix_temp, QryType.NS.value)
+                        )
 
             if cache_entry is None:
                 ns_of_interest_suffix: str = ns_of_interest
