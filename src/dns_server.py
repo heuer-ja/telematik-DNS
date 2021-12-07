@@ -7,7 +7,7 @@ import time
 from threading import Thread
 from typing import Dict, List
 from constants import Constants, ServerTypes, ColorsPr
-from dns_format import DnsFormat, DnsRequestFormat, DnsResponseFormat, QryType, RCodes
+from dns_format import DnsFormat, DnsResponseFormat, QryType, RCodes
 
 
 CONST = Constants()

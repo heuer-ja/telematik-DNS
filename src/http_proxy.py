@@ -1,4 +1,4 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer, SimpleHTTPRequestHandler
+from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse
 import urllib.request
 from constants import Constants

@@ -205,7 +205,7 @@ because it is already the auth. NS.
 - There are two ways cache entries are used to reduce the number of requests sent to the Name Servers:
   1. The requested name together with the requested Resource Record is already contained in the cache, then the corresponding value (IP address) is used for the response.
   2. A suffix of the requested name together with Resource Record type *NS* is already contained in the cache, then the `RecursiveResolver` sends its request to the IP address of that Name Server instead of to root. A simplified example: The cache already contains the key for name fuberlin with Resource Record *NS*, then it will send a request for the *A-RR* of homework.fuberlin to fuberlin (to ns.fuberlin to be exact) instead of to root.
-- The leading "ns." of our name servers is cut before it is written in the cache, so that the cache entry always points to a domain name.
+- The leading "`ns.`" of our name servers is cut before it is written in the cache, so that the cache entry always points to a domain name.
 - Caching can be tested by making subsequent requests to the `StubResolver` without stopping the `RecursiveResolver`. As every send operation waits 100ms before executing, and the `StubResolver` prints out the total Query time for each request, the Query Time should noticeably decrease if the cache is used.
 
 ## 2.4. HTTP Proxy / HTTP Server
