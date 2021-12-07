@@ -203,7 +203,6 @@ dns_format = {
     - The response determined in the recursion is sent back to the `StubResolver` in the form of `DnsFormat`
 
 
-`TODO unter 2.`
 ### Nameservers
 1. receive
     - Each name server `DnsServer` runs in its own thread and uses polling to wait for a request from `RecursiveResolver`.  
