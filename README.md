@@ -102,11 +102,11 @@ Start programs from root directory
         - opens internet browser in several tabs
             - Tab 1: *www.switch.telematik* (local DNS)
             - Tab 2: *wikepedia.com* (external DNS)
-    - Test 4 (Do it yourself - Local DNS)
+    - Test 4 (*Do it yourself - Local DNS*)
         - here you can enter your own queries
         - Access to HTTP proxy not possible via console
         - repeating test 4 allows to test the cache  
-    - Test 5 (Do it yourself 2 - HTTP Proxy)
+    - Test 5 (*Do it yourself 2 - HTTP Proxy*)
         - not included in `run.sh`
         - you have to open your browser 
         - enter the URL *http://127.0.0.90:8090/?url={YOUR_DOMAIN}*
