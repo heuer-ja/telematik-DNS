@@ -44,7 +44,7 @@ Start programs from root directory
     5. `python3 src/http_server.py` - run HTTP server  
 
 
-## Error handling
+### Error handling
 - If, for whatever reason, the used addresses are blocked after running the scripts, the following command will help under *Linux*:
     1. Combined `pkill -9 -f "^python3 src/.*"`
     2. Separate: 
