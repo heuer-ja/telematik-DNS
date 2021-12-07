@@ -204,25 +204,24 @@ telematik 300 IN A 127.0.0.32
 - The given flags are divided into *Request` with `DnsFormatRequest` and *Response` with `DnsFormatResponse`.
 
 ```
-Our DNS format represented as JSON
+Our DNS format represented as JSON:
 
 dns_format = {
     "request": {
-        "dns.flags.recdesired": Bool, # True <-> recursion should be used by the server
-        "dns.qry.name": str, # requested name
-        "dns.qry.type": int, # requested type: A=1, NS=2, Invalid=0
+        "dns.flags.recdesired": Bool,       # True <-> recursion should be used by the server
+        "dns.qry.name": str,                # requested name
+        "dns.qry.type": int,                # requested type: A=1, NS=2, Invalid=0
     }
     "response": {
-        "dns.flags.response": Bool, # True <-> a result was found
-        "dns.flags.rcode": int, # response code, more information see above at rcodes
-        "dns.count.answers": int, # count of answers
+        "dns.flags.response": Bool,         # True <-> a result was found
+        "dns.flags.rcode": int,             # response code, more information see above at rcodes
+        "dns.count.answers": int,           # count of answers
         "dns.flags.authoritative": boolean, # True <-> auth. DNS server | False <-> rec. DNS server
-        "dns.a": str, # ip address
-        "dns.ns": str, # name of ns server if existing
-        "dns.resp.ttl": int # TTL of the record
+        "dns.a": str,                       # ip address
+        "dns.ns": str,                      # name of ns server if existing
+        "dns.resp.ttl": int                 # TTL of the record
     }
 }
-
 ```
 <a name="parallel"></a>
 ### Parallel execution
